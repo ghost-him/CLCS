@@ -6,8 +6,7 @@ project(CLCS
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_BUILD_TYPE "Release")
 
 include_directories(include)
 
