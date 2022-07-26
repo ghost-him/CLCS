@@ -1,4 +1,7 @@
 # CLCS
+
+[english](https://github.com/ghost-him/CLCS/blob/main/english.md)
+
 一个linux下，基于命令行的聊天软件
 
 ## CLCS项目介绍
