@@ -1,6 +1,6 @@
 # CLCS
 
-[简体中文](https://github.com/ghost-him/CLCS/main/README.md)
+[简体中文](https://github.com/ghost-him/CLCS/blob/main/README.md)
 
 A linux, command-line based chat software
 
