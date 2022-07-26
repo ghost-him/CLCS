@@ -30,26 +30,31 @@ Then check if you have the c++ compiler and cmake tools.
 ```
 cmake -B build
 cmake --build build
-`` `
+```
 3. Go to the `build` folder
 
 4. Run CLCS
 
 5. Do the initial setup
+
 ```
 Language: Choose the language you want, if you don't have a language file, you will need to translate it yourself, the language file is in the `option/language` folder in the current directory
 ip and port: if you don't need it, just skip it (ip will be the current available ip, port will be set to 6000)
-``` 6.
+``` 
+
 6. Start the program
 
 ### Client
+
 1. Go to the `CLCS-client` folder
 
 2. Enter
+
 ```
 cmake -B build
 cmake --build build
-`` `
+```
+
 3. Go to the `build` folder
 
 4. Run CLCS
@@ -58,7 +63,7 @@ cmake --build build
 ```
 Language: Choose the language, if there is no language file, you need to translate it yourself, the language file is in the `option/language` folder in the current directory
 ip and port: fill in the address of the target server (ip + port)
-``` 6.
+``` 
 
 6. Start the program
 
