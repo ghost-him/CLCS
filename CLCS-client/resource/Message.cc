@@ -163,25 +163,17 @@ MessageReceiver *MessageReceiver::getInstance() {
 void MessageReceiver::receive_message() {
     char buf[BUFSIZ];
     int ret;
-    while (1) {
-        ret = read(_socketfd, buf, BUFSIZ);
-        if (ret == -1)
-            break;
-        else if(ret == 0) {
-            _pConnector->close_connect();
-            log->log((*lang)["MessageReceiver_close_connect"]);
-            break;
-        }
-        // TODO 使用analysis规范语句
-        // _analysis = buf;
-        // 获取到当前的内容
-        // _message += _analysis.get_content();
-        _message = buf;
+    ret = read(_socketfd, buf, BUFSIZ);
+    if(ret == 0) {
+        _pConnector->close_connect();
+        log->log((*lang)["MessageReceiver_close_connect"]);
+        while(1);   // TODO 这里需要在线程池中退出
     }
-    // 若文件不是读到结尾
-    if (errno != EAGAIN) {
-        log->log((*lang)["MessageReceiver_read_error"]);
-    }
+    // TODO 使用analysis规范语句
+    // _analysis = buf;
+    // 获取到当前的内容
+    // _message += _analysis.get_content();
+    _message = buf;
 }
 
 std::string MessageReceiver::get_content() {

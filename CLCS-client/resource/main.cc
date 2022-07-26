@@ -5,6 +5,7 @@
 #include "Message.h"
 #include "Business.h"
 
+// TODO 检测连接是否成功， 如果未连接成功， 则退出程序
 
 int main() {
     Init::startInit();
@@ -16,6 +17,7 @@ int main() {
     MessageReceiver::getInstance()->InitMessageReceiver();
     threadpool->commit(TaskLevel::DO_KEEP, Business::start_accept_from_server);
 
+    std::cout << "输入quit即可退出程序" << std::endl;
     while (1) {
         std::string line;
         std::cin >> line;

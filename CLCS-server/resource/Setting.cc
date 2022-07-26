@@ -20,11 +20,7 @@ void Setting::InitSetting() {
         _writeFile.writeFile();
     } else {
         _readFile.readFile(_writeFile._store);
-        for (auto i : _writeFile._store) {
-            std::cout << i.first << std::endl;
-        }
         if (_writeFile._store.size() != DefaultOption::store.size()) {
-            std::cout << _writeFile._store.size() << " " << DefaultOption::store.size()<<std::endl;
             log->log("[error] setting sys: Incorrect number of entries\n");
             log->exit_process();
         }
@@ -67,6 +63,7 @@ void Setting::first_time_run() {
     (*this)["threadpool_min_thread"] = std::to_string(hardware_cur);
     (*this)["threadpool_grow_thread"] = std::to_string(hardware_cur);
     (*this)["threadpool_set_check_time"] = "5";
+    std::cout << "初始化完成" << std::endl;
 
 }
 

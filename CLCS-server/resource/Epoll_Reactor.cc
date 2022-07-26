@@ -135,7 +135,6 @@ void Epoll_Reactor::acception_connection() {
             log->log((*lang)["epoll_reactor_accept_error"]);
     }
 
-    // 枚举可以插入的位置
     int index = 0;
     do {
         // 设置为非阻塞
