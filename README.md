@@ -88,3 +88,6 @@ c++真的是越学越不会。。。难哭了。。。
 * 添加加密模块
 * 将这些模块整合到一起
 * 添加更多的提示
+
+[![Stargazers over time](https://starchart.cc/ghost-him/CLCS.svg)](https://starchart.cc/ghost-him/CLCS)
+
