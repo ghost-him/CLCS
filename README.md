@@ -1,7 +1,5 @@
 # CLCS
 
-[english](https://github.com/ghost-him/CLCS/blob/main/english.md)
-
 一个linux下，基于命令行的聊天软件
 
 缓慢开发中。。。最近没啥时间。。。
@@ -18,8 +16,20 @@ CLCS采用了`c++`作为编程语言， 采用`git`来实现版本管理，使�
 
 ## 程序安装方法
 
-首先先确保自己的电脑的环境为linxu
-然后检查是否有c++编译器，cmake这两个工具
+### 开发环境
+
+当前的开发环境：
+
+* `Linux version 5.19.1-3-MANJARO`
+* `gcc 版本 12.1.1 20220730 (GCC)`
+* `cmake version 3.23.3`
+
+要求的开发环境：
+
+* 支持`c++20`的标准
+* 支持`cmake`的`-B` 和 `--build`命令
+* 安装`openssl`开发环境
+* 安装`libuuid`库
 
 ### 服务端
 1. 进入 `CLCS-server` 文件夹
@@ -31,7 +41,7 @@ cmake --build build -j4
 ```
 3. 进入 `build` 文件夹
 
-4. 运行CLCS
+4. 运行CLCS（也可以将当前程序移动到其他地方启动）
 
 5. 进行初始化设置
 ```
@@ -50,7 +60,7 @@ cmake --build build -j4
 ```
 3. 进入 `build` 文件夹
 
-4. 运行CLCS
+4. 运行CLCS（也可以将当前程序移动到其他地方启动）
 
 5. 进行初始化设置
 ```
