@@ -5,7 +5,9 @@
 #include "ThreadPool.h"
 #include "User_Manager.h"
 #include "stdinc.h"
+
 int main() {
+
     // 初始化各个模块
     Init::startInit();
     // 初始化业务系统
@@ -32,7 +34,7 @@ int main() {
         // 如果command为quit, 则退出程序
         if (command == "quit")
             break;
-        Command_Analysis::getInstance()->check(command);
+        Command_Analysis::getInstance()->check(std::move(command));
     }
 
     // 保存设置

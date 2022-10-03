@@ -17,7 +17,7 @@ public:
      * 重设目标ip地址和端口, 若输入的ip和地址无效， 则重新输入
      */
     static void reset_target_ip_port();
-    static void reset_target_ip_port(std::string &, int);
+    static void reset_target_ip_port(const std::string &, int);
     /*
      * 重新连接目标服务器
      */
@@ -57,17 +57,17 @@ public:
     /*
      * 向服务器发送recall消息
      */
-    static void recall_request(std::string&);
+    static void recall_request(const std::string&);
     /*
      * 向指定的人(昵称, uuid)发送消息
      */
-    static void send_message(std::string&, std::string&);
+    static void send_message(const std::string&, const std::string&);
 
     /*=======用户相关===========*/
     /*
      * 重命名
      */
-    static void rename(std::string&, std::string&);
+    static void rename(const std::string&, const std::string&);
     /*
      * 添加用户
      */

@@ -45,7 +45,7 @@ void Business::reset_target_ip_port() {
               << "\n当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " + (*setting)["target_server_port"] << "\n请输入 re_connect 重新连接目标服务器" << std::endl;
 }
 
-void Business::reset_target_ip_port(std::string &ip, int port) {
+void Business::reset_target_ip_port(const std::string &ip, int port) {
     if (!s_c.set_target(ip.c_str(), port))
         std::cout << "无效的ip和端口" << std::endl;
     else
@@ -167,11 +167,11 @@ void Business::start_accept_from_server() {
 }
 
 
-void Business::recall_request(std::string &message) {
+void Business::recall_request(const std::string &message) {
     m_s.recall_mes(u_m->get_server_uuid(), message);
 }
 
-void Business::send_message(std::string &name, std::string &message) {
+void Business::send_message(const std::string &name, const std::string &message) {
     User *user = u_m->find_user(name);
     if (user == nullptr) {
         std::cout << "找不到该用户" << std::endl;
@@ -219,7 +219,7 @@ void Business::cat_user() {
     }
 }
 
-void Business::rename(std::string &old, std::string &new_name) {
+void Business::rename(const std::string &old, const std::string &new_name) {
     // 重命名
     if (u_m->rename(old, new_name))
         std::cout << "成功改名" << std::endl;
