@@ -1,6 +1,5 @@
 #pragma once
 #include "Log.h"
-#include "Server_Connector.h"
 #include "User.h"
 #include "stdinc.h"
 #include "Language.h"
@@ -175,7 +174,7 @@ public:
      * 读取命令,
      * 当可以触发一个函数的时候，返回false, 否则返回true以为while做循环
      */
-    bool get_command(MessageReceiver*);
+    int get_command(MessageReceiver *mr);
     /*
      * 检查头消息是否正确
      */
@@ -200,7 +199,7 @@ private:
     // 消息解密以后的内容
     std::string _content;
     // 用户管理器
-    User_Manager* u_m = User_Manager::getInstance();
+    User_Manager* u_m;
 };
 
 
@@ -212,43 +211,14 @@ private:
 class MessageSender {
 public:
     MessageSender();
-    void InitMessageSender();
-    /*
-     * 测试延迟
-     */
-    void Test_Latency();
-    /*
-     * 向服务器发送回调信息
-     */
-    void recall_mes(const std::string &, const std::string &);
-    /*
-     * 向指定的用户发送信息
-     */
-    void send_user_message(const std::string &, const std::string &);
-    void send_user_message(const std::string &, std::shared_ptr<unsigned char>, int, MessageHeader::Level, MessageHeader::Option, MessageHeader::Option);
-    /*
-     * 在服务器中添加自己的信息
-     */
-    void init_the_server();
-    /*
-     * 请求指定uuid的公钥
-     */
-    void add_user(const std::string&);
-    /*
-     * 设置与之配对的连接器
-     */
-    void set_connector(Server_Connector *);
-private:
+    void startInit();
+    void set_fd(int);
     // 发送一个字符串
     void send_message(const std::string&);
-    void send_message(const std::shared_ptr<unsigned char>, int);
+    void send_message(std::shared_ptr<unsigned char>, int);
 
-
-    pthread_mutex_t _is_send_message = PTHREAD_MUTEX_INITIALIZER;
-
+private:
     static MessageSender* _pMessageSender;
-    // 连接器对象， 用于更新socketfd
-    Server_Connector* _pConnector;
     // 目标服务器的文件描述符
     int _socket_fd;
     MessageGenerator _generator;
@@ -266,7 +236,7 @@ private:
 class MessageReceiver {
 public:
     MessageReceiver();
-    void InitMessageReceiver();
+    void startInit();
     /*
      * 获取头文件
      */
@@ -278,11 +248,14 @@ public:
     /*
      * 读取一行
      */
-    bool read_header();
+    int read_header();
     /*
      * 读取文件的内容
+     * 0: 关闭了连接
+     * >0: 正常的连接
+     * <0: 异常
      */
-    bool read_content();
+    int read_content();
     /*
      * 设置读文件, 并且设置读的长度
      */
@@ -295,12 +268,6 @@ public:
      * 获取当前的fd
      */
     int get_fd() const;
-    /*
-     * 设置连接器
-     */
-    void set_connector(Server_Connector*);
-
-
 
 private:
     // 读到的头文件
@@ -322,8 +289,6 @@ private:
     Log* log;
     // 语言系统
     Language* lang;
-    // 连接器
-    Server_Connector* _pConnector;
 
 };
 

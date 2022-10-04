@@ -22,9 +22,9 @@ Epoll_Reactor* Epoll_Reactor::getInstance() {
 
 
 void Epoll_Reactor::Init_Epoll() {
-    log = Log::getInstance();
-    lang = Language::getInstance();
-    setting = Setting::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
+    setting = Setting::ptr;
     // 初始化变量
     MAX_EVENTS = std::stoi((*setting)["epoll_reactor_max_events"]);
     _max_connect = std::stoi((*setting)["epoll_reactor_max_connect"]);
@@ -84,7 +84,7 @@ void Epoll_Reactor::Init_Epoll() {
     set_event(now_event, _serv_fd, acception_connection);
     add_event(EPOLLIN, now_event);
     mg.startInit();
-    u_m = User_Manager::getInstance();
+    u_m = User_Manager::ptr;
 }
 
 void Epoll_Reactor::set_ip(std::string& ip) {
@@ -414,7 +414,7 @@ bool Epoll_Reactor::add_user(std::list<Event>::iterator * event) {
     new_user.set_uuid(now_event.source_uuid);
     // 设置公钥路径
     // 创建公钥文件
-    std::string pub_path = FileManager::getInstance()->get("keys") + now_event.source_uuid + ".pub";
+    std::string pub_path = FileManager::ptr->get("keys") + now_event.source_uuid + ".pub";
     int file_fd = open(pub_path.c_str(), O_CREAT|O_RDWR, 0700);
     if (file_fd < 0) {
         log->log("[error] epoll_reactor: open file error:, %e");

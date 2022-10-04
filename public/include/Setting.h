@@ -9,12 +9,12 @@
 
 class Setting {
 public:
-    static Setting* getInstance();
+    static Setting* ptr;
 
     /*
      * 初始化输入
      */
-    static void InitSetting();
+    static void startInit();
     /*
      * 初始化设置
      * 程序第一次运行的时候执行（即找不到设置文件）
@@ -29,7 +29,6 @@ public:
 private:
     Setting();
     static FileManager* _FileManager;
-    static Setting* _pSetting;
     static ReadWithLine _readFile;
     static WriteWithLine _writeFile;
     static Log* log;

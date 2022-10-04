@@ -6,7 +6,7 @@
 
 class Command_Analysis {
 public:
-    static Command_Analysis* getInstance();
+    static Command_Analysis* ptr;
 
     /*
      * 初始化分析系统
@@ -26,7 +26,7 @@ private:
     Command_Analysis(){};
 
     // 指针，用于单例模式
-    static Command_Analysis* _pCommand_Analysis;
+
 
     // 服务指针
     Command_Service* _service;

@@ -1,15 +1,10 @@
 #include "Command_Analysis.h"
 // 初始化静态变量
-Command_Analysis *Command_Analysis::_pCommand_Analysis = new Command_Analysis;
-
-Command_Analysis *Command_Analysis::getInstance() {
-    return _pCommand_Analysis;
-}
+Command_Analysis *Command_Analysis::ptr = new Command_Analysis;
 
 void Command_Analysis::Init_Analysis_System() {
-    log = Log::getInstance();
+    log = Log::ptr;
     _service = nullptr;
-
 }
 
 void Command_Analysis::check(std::string && str) {

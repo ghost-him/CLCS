@@ -1,17 +1,13 @@
 #include "ThreadPool.h"
 
 // 初始化静态变量
-ThreadPool* ThreadPool::_pThreadPool = new ThreadPool();
+ThreadPool* ThreadPool::ptr = new ThreadPool();
 threadPool_t ThreadPool::self;
 std::deque<Task> ThreadPool::_task_deque;
 std::set<pthread_t> ThreadPool::_thread_id;
 Log* ThreadPool::log;
-Setting &ThreadPool::setting = *Setting::getInstance();
+Setting &ThreadPool::setting = *Setting::ptr;
 Language* ThreadPool::lang;
-
-ThreadPool* ThreadPool::getInstance() {
-    return _pThreadPool;
-}
 
 void ThreadPool::set_max_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
@@ -59,9 +55,9 @@ ThreadPool::ThreadPool() {
 
 }
 
-void ThreadPool::InitThreadPool() {
-    log = Log::getInstance();
-    lang = Language::getInstance();
+void ThreadPool::startInit() {
+    log = Log::ptr;
+    lang = Language::ptr;
     log->log((*lang)["threadPool_start_init"]);
     self._max_number = std::stoi(setting["threadpool_max_thread"]);
     self._min_number = std::stoi(setting["threadpool_min_thread"]);

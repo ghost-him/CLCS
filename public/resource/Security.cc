@@ -1,8 +1,8 @@
 #include "Security.h"
 
 RSA_controller::RSA_controller() {
-    log = Log::getInstance();
-    lang = Language::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
 }
 
 RSA_controller::~RSA_controller() {
@@ -66,8 +66,8 @@ RSA_Security::RSA_Security() {
 
 void RSA_Security::startInit() {
     _rsa = RSA_new();
-    log = Log::getInstance();
-    lang = Language::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
 }
 
 void RSA_Security::init() {

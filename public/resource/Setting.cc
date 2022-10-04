@@ -1,18 +1,15 @@
 #include "Setting.h"
 
-Setting *Setting::_pSetting = new Setting;
+Setting *Setting::ptr = new Setting;
 FileManager* Setting::_FileManager = nullptr;
 Log* Setting::log = nullptr;
 ReadWithLine Setting::_readFile;
 WriteWithLine Setting::_writeFile;
 
-Setting *Setting::getInstance() {
-    return _pSetting;
-}
 
-void Setting::InitSetting() {
-    log = Log::getInstance();
-    _FileManager = FileManager::getInstance();
+void Setting::startInit() {
+    log = Log::ptr;
+    _FileManager = FileManager::ptr;
     std::string path = _FileManager->get("option") + "option.txt";
     _readFile.setFilePath(path);
     // 如果不存在文件，则创建文件

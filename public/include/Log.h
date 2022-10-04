@@ -10,15 +10,13 @@
 
 class Log final {
 public:
+    static Log* ptr;
     /*
      * 输出log日志
      */
     void log(const std::string& str);
 
-    /*
-     * 获取Log的指针
-     */
-    static Log* getInstance();
+
 
     /*
      * 获取目标的文件路径
@@ -49,7 +47,7 @@ private:
     Log();
     ~Log();
 
-    static Log* _pLog;
+
 
     // 输出的位置
     std::ostream& _ost;

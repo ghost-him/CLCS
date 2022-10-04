@@ -11,7 +11,7 @@ class Setting;
 
 class Language {
 public:
-    static Language* getInstance();
+    static Language* ptr;
 
     /*
      * 获取指定字符串的ip
@@ -29,7 +29,6 @@ public:
     void InitLanguage();
 
 private:
-    static Language* _pLanguage;
     Language();
     // 重新加载语言
     void reload();

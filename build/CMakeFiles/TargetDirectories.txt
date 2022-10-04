@@ -1,0 +1,11 @@
+/home/ghost-him/CLionProjects/CLCS/build/CMakeFiles/edit_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/CMakeFiles/rebuild_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/public/CMakeFiles/public.dir
+/home/ghost-him/CLionProjects/CLCS/build/public/CMakeFiles/edit_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/public/CMakeFiles/rebuild_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-client/CMakeFiles/CLCS-client.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-client/CMakeFiles/edit_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-client/CMakeFiles/rebuild_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-server/CMakeFiles/CLCS-server.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-server/CMakeFiles/edit_cache.dir
+/home/ghost-him/CLionProjects/CLCS/build/CLCS-server/CMakeFiles/rebuild_cache.dir

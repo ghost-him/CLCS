@@ -17,7 +17,7 @@ void ReadWithLine::readFile(std::unordered_map<std::string, std::string> &target
     ifs.open(_file_path, std::ios::in);
     if (!ifs.is_open()) {
         _is_exist_error = true;
-        Log::getInstance()->log("[warn] MessageGenerator: message level not exist :" + _file_path);
+        Log::ptr->log("[warn] MessageGenerator: message level not exist :" + _file_path);
         return ;
     }
     _is_exist_error = false;
@@ -50,7 +50,7 @@ void ReadWithLine::readFile(std::unordered_map<std::string, std::string> &target
 
         }while(0);
         if (!is_valid)
-            Log::getInstance()->log("[warn] invalid line");
+            Log::ptr->log("[warn] invalid line");
         else
             target[a] = b;
     }
@@ -111,7 +111,7 @@ std::string &WriteWithLine::operator[](const std::string & str) {
 
 
 void WriteWithLine::writeFile() {
-    auto log = Log::getInstance();
+    auto log = Log::ptr;
     std::ofstream ofs;
     if (_file_path.empty()) {
         _is_exist_error = true;
@@ -136,7 +136,7 @@ void WriteWithLine::writeFile() {
 }
 
 bool WriteUser::write_file(std::map<std::string, User> & user_store) {
-    auto log = Log::getInstance();
+    auto log = Log::ptr;
     std::ofstream ofs;
     ofs.open(_file_path, std::ios::out | std::ios::trunc);
     if (!ofs.is_open()) {
@@ -164,20 +164,16 @@ std::string WriteUser::get_user_message(User & user) {
     return std::move(res);
 }
 
-FileManager* FileManager::_pFileManager = new FileManager;
+FileManager* FileManager::ptr = new FileManager;
 
 FileManager::FileManager() {
     // 设置默认值
     _dir_path["default_path"] = "";
 }
 
-FileManager* FileManager::getInstance() {
-    return _pFileManager;
-}
-
 std::string& FileManager::get(const std::string& dir_path) {
     if (_dir_path.count(dir_path) == 0) {
-        Log::getInstance()->log("[warn] %c target file not exist: " + dir_path);
+        Log::ptr->log("[warn] %c target file not exist: " + dir_path);
         return _dir_path["default_path"];
     }
     return _dir_path[dir_path];

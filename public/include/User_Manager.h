@@ -10,7 +10,7 @@
  */
 class User_Manager {
 public:
-    static User_Manager* getInstance();
+    static User_Manager* ptr;
     /*
      * 初始化用户管理器
      * 如果没有相应的储存文件， 则创建一个新的文件
@@ -81,7 +81,7 @@ public:
 private:
     User_Manager(){};
 
-    static User_Manager* _pUser_manager;
+
     // 自身
     static User self;
     static User server;

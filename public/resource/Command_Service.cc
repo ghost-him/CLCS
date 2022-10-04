@@ -22,9 +22,11 @@ void Service::operator=(const std::function<void(const std::vector<std::string>&
 }
 
 // true表示成功执行
-Service& Service::set(const std::string& command) {
+Service& Service::set(const std::string& command, std::string&& des) {
     if (_store.count(command) == 0) {
         Service temp;
+        temp.description = std::move(des);
+        temp.name = command;
         _store.emplace(command, temp);
     }
     return _store[command];
@@ -36,6 +38,11 @@ Service* Service::get(const std::string& command) {
     }
     return &_store[command];
 }
+
+void Service::set_format(std::string && str) {
+    format = std::move(str);
+}
+
 
 
 // 分析当前的参数
@@ -69,10 +76,12 @@ void Command_Service::update(const std::vector<std::string>& command) {
 }
 
 // 设置函数
-Service& Command_Service::set(const std::string& command) {
+Service& Command_Service::set(const std::string& command, std::string&& des) {
     if (_store.count(command) == 0) {
         Service temp;
-        _store.emplace(command, temp);
+        temp.description = std::move(des);
+        temp.name = command;
+        _store.emplace(command, std::move(temp));
     }
     return _store[command];
 }
@@ -88,3 +97,32 @@ void Command_Service::set_group_param(std::string && command) {
     _group.emplace(std::move(command));
 }
 
+void Command_Service::help() {
+    for (auto i : _store) {
+        help(i.second, 0);
+        std::cout << "\n";
+    }
+}
+
+void Command_Service::help(const Service& now, int level) {
+    std::string out;
+
+    for (int i = 0; i < level; i++) out.push_back('\t');
+    out += now.name;
+    out.push_back('\n');
+
+    for (int i = 0; i < level + 1; i++) out.push_back('\t');
+    out += now.description;
+    out.push_back('\n');
+
+    if (!now.format.empty()) {
+        for (int i = 0; i < level + 1; i++) out.push_back('\t');
+        out += now.format;
+        out.push_back('\n');
+    }
+
+    std::cout << out;
+    for (auto i : now._store) {
+        help(i.second, level + 1);
+    }
+}

@@ -21,7 +21,7 @@
 **文件工作结构**
 
 ```
-CLCS项目结构演示
+CLCS程序目录结构
    ├── 运行程序
    ├── history
    │   ├── user1
@@ -46,9 +46,34 @@ keys:     存放用户的公钥信息
 **项目文件夹**
 
 ```
+.
+├── CLCS-client
+│   ├── CMakeLists.txt
+│   ├── include
+│   └── resource
+├── CLCS-server
+│   ├── CMakeLists.txt
+│   ├── include
+│   └── resource
+├── CMakeLists.txt
+├── doc
+├── LICENSE
+├── public
+│   ├── CMakeLists.txt
+│   ├── include
+│   └── resource
+└── README.md
+
+```
+
+```
 doc： 			存放参考文档
-include： 		存放头文件
-resources： 		存放.cc文件
+CLCS-client	     存放客户端的相关的文件
+CLCS-server		 存放服务端的相关的文件
+public		     存放公共部分的代码
+
+    include： 		存放头文件
+    resources： 		存放.cc文件
 ```
 
 ---
@@ -401,7 +426,7 @@ TEXT_SYS ADD_USER NOMEAN
 
 ## 类的说明
 
-### `Init`类
+### `startInit`类
 
 作用：初始化整个模块， 承担了 **初始化各大模块** 和 **初始化工作文件夹** 的职责
 
@@ -570,6 +595,18 @@ TEXT_SYS ADD_USER NOMEAN
 
 * 检查用户的命令
 
+
+
+### `Command_Service`类
+
+作用：用于给`Command_Analysis`类设置规范（明确什么命令是有效的，这个命令的作用是什么， 执行什么函数）
+
+* 显示帮助页面
+* 分析当前的参数
+* 添加命令
+* 获取命令
+* 设置命令是否是一个命令组（如`cat`， 可以实现`cat user uuid time` ）
+
 ### `Business`类
 
 作用：**客户端**的业务逻辑
@@ -690,17 +727,27 @@ TEXT_SYS ADD_USER NOMEAN
 
 ### `MessageSender`类
 
-将指定的消息发送到指定的地方， 同时还封装了`MessageGenerator`类作为消息生成器， 提供一键发送指定类型的消息流的数据
+将指定的消息发送到指定的地方
 
 
+
+* 设置连接器（低阶）
+* 发送特定的消息（低阶）
+
+
+
+### `Message_Process`类
+
+
+用于处理客户端和服务器之间的通讯的过程，用于处理生成信息， 处理信息，然后发送信息
+
+封装了`MessageGenerator`, `MessageSender`,` Server_connector`三个系统， 将原来`MessageSender`这个类进行了拆分
 
 * 发送测试延迟信息的信息流（高阶）
 * 发送`RECALL`消息流（高阶）
 * 向指定用户发送指定消息流（高阶）
 * 发送初始化服务器消息流（高阶）
 * 发送添加用户消息流（高阶）
-* 设置连接器（低阶）
-* 发送特定的消息（低阶）
 
 
 
@@ -814,6 +861,16 @@ static const char RECV = 2;			// 当前信息是用来回应发送端的
 static const char USER_LIST = 3;	// 数据的内容为当前的在线用户
 ```
 
+### `Service`类
+
+提供命令的信息和执行的函数入口
+
+```
+std::map<std::string, Service> _store; 	// 保存他的子类， 从而实现命令的嵌套
+std::string description; 				// 当前命令的描述
+std::string name;						// 当前命令的名字
+std::string format;						// 当前命令的格式
+```
 
 ## 后期优化
 

@@ -50,9 +50,9 @@ public:
 
 class ThreadPool final {
 public:
-    static ThreadPool* getInstance();   // 获取实例化
+    static ThreadPool* ptr;
 
-    static void InitThreadPool();
+    static void startInit();
 
     static void startThreadPool();
 
@@ -86,8 +86,6 @@ private:
     static threadPool_t self;
     ThreadPool();
     ~ThreadPool();
-    // 饿汉式
-    static ThreadPool* _pThreadPool;
 
     // 普通线程做的任务
     static void* thread_work(void *);

@@ -1,0 +1,107 @@
+[
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Command_Analysis.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Command_Analysis.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Command_Analysis.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Command_Service.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Command_Service.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Command_Service.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Default.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Default.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Default.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/FileManager.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/FileManager.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/FileManager.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Init.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Init.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Init.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Language.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Language.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Language.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Log.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Log.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Log.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Message.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Message.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Message.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Security.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Security.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Security.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/Setting.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/Setting.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/Setting.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/ThreadPool.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/ThreadPool.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/ThreadPool.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/User.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/User.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/User.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/public",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/public.dir/resource/User_Manager.cc.o -c /home/ghost-him/CLionProjects/CLCS/public/resource/User_Manager.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/public/resource/User_Manager.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-client",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-client.dir/resource/Business.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Business.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Business.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-client",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-client.dir/resource/Message_Process.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Message_Process.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Message_Process.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-client",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-client.dir/resource/Personalization.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Personalization.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Personalization.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-client",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-client.dir/resource/Server_Connector.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Server_Connector.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/Server_Connector.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-client",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-client/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-client.dir/resource/main.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/main.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-client/resource/main.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-server",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-server.dir/resource/Epoll_Reactor.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/Epoll_Reactor.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/Epoll_Reactor.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-server",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-server.dir/resource/Personalization.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/Personalization.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/Personalization.cc"
+},
+{
+  "directory": "/home/ghost-him/CLionProjects/CLCS/build/CLCS-server",
+  "command": "/usr/bin/clang++  -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/include -I/home/ghost-him/CLionProjects/CLCS/CLCS-server/../public/include -O3 -DNDEBUG -std=c++20 -o CMakeFiles/CLCS-server.dir/resource/main.cc.o -c /home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/main.cc",
+  "file": "/home/ghost-him/CLionProjects/CLCS/CLCS-server/resource/main.cc"
+}
+]

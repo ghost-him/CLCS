@@ -59,7 +59,6 @@ class RSA_controller;
 class RSA_Security;
 class RSA_encrypt;
 class RSA_decrypt;
-class Server_Connector;
 class Setting;
 class threadPool_t;
 class TaskLevel;

@@ -4,7 +4,6 @@
 #include "Language.h"
 #include "Setting.h"
 #include "ThreadPool.h"
-#include "Server_Connector.h"
 #include "Message.h"
 #include "Command_Analysis.h"
 #include "Command_Service.h"

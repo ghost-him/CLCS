@@ -1,10 +1,6 @@
 #include "Language.h"
 
-Language* Language::_pLanguage = new Language;
-
-Language *Language::getInstance() {
-    return _pLanguage;
-}
+Language* Language::ptr = new Language;
 
 const std::string& Language::operator[](const std::string& str) {
     // 如果找不到目标
@@ -20,8 +16,8 @@ void Language::set_language(const std::string & str) {
 
 
 void Language::InitLanguage() {
-    log = Log::getInstance();
-    setting = Setting::getInstance();
+    log = Log::ptr;
+    setting = Setting::ptr;
     log->log("[info] language sys: init the language system\n");
     // 该函数不论执行多少次， 只会运行一次
     if (is_inited)
@@ -44,7 +40,7 @@ void Language::reload() {
 void Language::reload(const std::string& lang) {
     // 检查目标语言对应文件是否存在
 
-    std::string target_path = FileManager::getInstance()->get("language_path") + lang;
+    std::string target_path = FileManager::ptr->get("language_path") + lang;
     if (access(target_path.c_str(), F_OK) == -1) {
         // 如果语言不存在， 则创建一个新的文件
         log->log("[error] language system: file not exist: %e");

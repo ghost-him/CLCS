@@ -4,7 +4,7 @@
 /*
  * 创建一个对象
  */
-Log* Log::_pLog = new Log;
+Log* Log::ptr = new Log;
 
 // TODO 优化此结构， 以方便以后添加新的功能
 void Log::log(const std::string& str) {
@@ -64,10 +64,6 @@ void Log::log(const std::string& str) {
         _ofs << answer << "\n" << std::flush;
     }
     pthread_mutex_unlock(&_stream_lock);
-}
-
-Log* Log::getInstance() {
-    return _pLog;
 }
 
 std::string Log::getFilePath() const {

@@ -116,7 +116,7 @@ private:
 class FileManager {
     friend class Init;
 public:
-    static FileManager* getInstance();
+    static FileManager* ptr;
     /*
      * 提取输入的字符串对应的字符串
      * 若找不到，则返回默认的路径
@@ -125,6 +125,6 @@ public:
 
 private:
     FileManager();
-    static FileManager* _pFileManager;
+
     std::unordered_map<std::string, std::string> _dir_path;
 };

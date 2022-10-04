@@ -1,7 +1,12 @@
+/*
+ * 用于处理客户端自己的信息
+ */
+
 #pragma once
 #include "stdinc.h"
 #include "Message.h"
 #include "User_Manager.h"
+#include "Message_Process.h"
 
 class MessageReceiver;
 
@@ -40,10 +45,7 @@ public:
      * 保存设置
      */
     static void save();
-    /*
-     * cat 命令主框架
-     */
-    static void cat_func(std::string &);
+
     /*
      * 查看自己的uuid
      */
@@ -83,10 +85,6 @@ public:
      */
     static void init_server();
     /*
-     * 回应recall消息
-     */
-    static void return_recall(const std::string&, std::shared_ptr<unsigned char>, int);
-    /*
      * 显示recall消息
      */
     static void display_recall(const std::string&);
@@ -103,19 +101,21 @@ public:
      */
     static void display_latency();
 
+    static bool connect_server(const std::string& ip, int port);
+
     // 是否是第一次运行
     static bool is_start;
-    // 用于测试延时
-    static time_t last_time;
 
     static Log* log;
     static Language* lang;
     static Setting* setting;
     static User_Manager* u_m;
-    // 读取数据包
+
     static MessageReceiver mr;
-    // 处理数据包
     static MessageAnalysis ma;
-    static Server_Connector s_c;
-    static MessageSender m_s;
+
+    static Message_Process* m_process;
+
+    static Server_Connector* s_c;
+
 };

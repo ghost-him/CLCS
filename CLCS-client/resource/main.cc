@@ -10,10 +10,11 @@ int main() {
 
     // 初始化各个模块
     Init::startInit();
-    // 初始化业务系统
+
+    // 连接服务器
     Business::init_server();
 
-    auto thread_pool = ThreadPool::getInstance();
+    auto thread_pool = ThreadPool::ptr;
     thread_pool->startThreadPool();
     thread_pool->commit(TaskLevel::DO_KEEP, Business::start_accept_from_server);
 
@@ -34,7 +35,7 @@ int main() {
         // 如果command为quit, 则退出程序
         if (command == "quit")
             break;
-        Command_Analysis::getInstance()->check(std::move(command));
+        Command_Analysis::ptr->check(std::move(command));
     }
 
     // 保存设置

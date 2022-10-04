@@ -7,10 +7,10 @@ MessageGenerator::MessageGenerator()
 }
 
 void MessageGenerator::startInit() {
-    log = Log::getInstance();
-    lang = Language::getInstance();
-    setting = Setting::getInstance();
-    u_m = User_Manager::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
+    setting = Setting::ptr;
+    u_m = User_Manager::ptr;
     enc.startInit();
 }
 
@@ -108,6 +108,7 @@ MessageAnalysis::MessageAnalysis() {
 }
 
 void MessageAnalysis::startInit() {
+    u_m = User_Manager::ptr;
     // 设置解密的钥匙
     dec.startInit();
     dec.set_and_read_key(u_m->get_self_pri_path());
@@ -239,10 +240,11 @@ int MessageAnalysis::get_message_len() {
     return _message_size;
 }
 
-bool MessageAnalysis::get_command(MessageReceiver* mr) {
+int MessageAnalysis::get_command(MessageReceiver* mr) {
     // 读取头信息
-    if (!mr->read_header())
-        return false;
+    int ret;
+    if ((ret = mr->read_header()) <= 0)
+        return ret;
     const char * head = mr->get_header();
 
     // 检查头信息
@@ -279,8 +281,10 @@ bool MessageAnalysis::get_command(MessageReceiver* mr) {
     mr->set_read_content(_message_size);
 
     // 如果读成功了
-    if (mr->read_content()) {
+    if ((ret = mr->read_content()) > 0) {
         _raw = mr->get_content();
+    } else {
+        return ret;
     }
     return true;
 }
@@ -309,36 +313,15 @@ bool MessageAnalysis::check_header(const char * header) {
 
 
 
-void MessageSender::InitMessageSender() {
+void MessageSender::startInit() {
     _socket_fd = 0;
-    log = Log::getInstance();
-    lang = Language::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
     _generator.startInit();
 }
 
-void MessageSender::Test_Latency() {
-    pthread_mutex_lock(&_is_send_message);
-    // 设置消息的一系列属性
-
-    _generator.set_level_options(MessageHeader::TEXT_SYS, MessageHeader::TIME, MessageHeader::NOMEAN);
-    _generator.set_target_user_uuid(User_Manager::get_server_uuid());
-    // 获取当前的微秒数
-    struct timeval tc;
-    gettimeofday(&tc, nullptr);
-
-    _generator.set_content(std::to_string(tc.tv_usec), false);
-
-    // 发送消息的头标记
-    send_message(_generator.get_header());
-    // 发送消息本体
-    send_message(_generator.get_content(), _generator.get_content_size());
-    // 解锁
-    pthread_mutex_unlock(&_is_send_message);
-}
-
-void MessageSender::set_connector(Server_Connector * target) {
-    _pConnector = target;
-    _socket_fd = _pConnector->get_socketfd();
+void MessageSender::set_fd(int target) {
+    _socket_fd = target;
 }
 
 void MessageSender::send_message(const std::string & str) {
@@ -349,7 +332,7 @@ void MessageSender::send_message(const std::string & str) {
     }
 }
 
-void MessageSender::send_message(const std::shared_ptr<unsigned char> str, int len) {
+void MessageSender::send_message(std::shared_ptr<unsigned char> str, int len) {
     // 发送加密的消息
     ssize_t ret = write(_socket_fd, str.get(), len);
     if (ret == -1) {
@@ -357,99 +340,15 @@ void MessageSender::send_message(const std::shared_ptr<unsigned char> str, int l
     }
 }
 
-void MessageSender::recall_mes(const std::string& uuid, const std::string & message) {
-    pthread_mutex_lock(&_is_send_message);
-    // 设置消息的一系列属性
-
-    _generator.set_level_options(MessageHeader::RECALL, MessageHeader::NOMEAN, MessageHeader::NOMEAN);
-    _generator.set_target_user_uuid(uuid);
-    _generator.set_content(message, false);
-    // 发送消息的头标记
-    send_message(_generator.get_header());
-    // 发送消息本体
-    send_message(_generator.get_content(), _generator.get_content_size());
-    // 解锁
-    pthread_mutex_unlock(&_is_send_message);
-}
-
-void MessageSender::send_user_message(const std::string & uuid, const std::string & content) {
-    pthread_mutex_lock(&_is_send_message);
-    _generator.set_level_options(MessageHeader::TEXT_CHAT, MessageHeader::NOMEAN, MessageHeader::NOMEAN);
-    _generator.set_target_user_uuid(uuid);
-    _generator.set_content(content);
-
-    send_message(_generator.get_header());
-    send_message(_generator.get_content(), _generator.get_content_size());
-    pthread_mutex_unlock(&_is_send_message);
-}
-
-void MessageSender::send_user_message(const std::string & uuid, std::shared_ptr<unsigned char> ptr, int len, MessageHeader::Level level, MessageHeader::Option para1, MessageHeader::Option para2) {
-    pthread_mutex_lock(&_is_send_message);
-    _generator.set_level_options(level, para1, para2);
-    _generator.set_target_user_uuid(uuid);
-    _generator.set_content_len(len);
-
-    send_message(_generator.get_header());
-    send_message(ptr, len);
-
-    pthread_mutex_unlock(&_is_send_message);
-}
-
-void MessageSender::init_the_server() {
-    pthread_mutex_lock(&_is_send_message);
-    _generator.set_level_options(MessageHeader::TEXT_SYS, MessageHeader::INIT_SYS, MessageHeader::NOMEAN);
-    _generator.set_target_user_uuid(User_Manager::empty_uuid);
-
-    _generator.set_content(u_m->get_key_content(u_m->get_self_pub_path()), false);
-
-    send_message(_generator.get_header());
-    send_message(_generator.get_content(), _generator.get_content_size());
-
-    pthread_mutex_unlock(&_is_send_message);
-
-}
-
-void MessageSender::add_user(const std::string & uuid) {
-    pthread_mutex_lock(&_is_send_message);
-    _generator.set_level_options(MessageHeader::TEXT_SYS, MessageHeader::ADD_USER, MessageHeader::NOMEAN);
-    _generator.set_target_user_uuid(User_Manager::get_server_uuid());
-    // 消息的内容为请求的uuid
-    _generator.set_content(uuid, false);
-
-    send_message(_generator.get_header());
-    send_message(_generator.get_content(), _generator.get_content_size());
-
-    pthread_mutex_unlock(&_is_send_message);
-}
-
-/*
-void MessageSender::add_user(std::string & uuid, bool is_send) {
-    pthread_mutex_lock(&_is_send_message);
-    auto para = MessageHeader::SEND;
-    // 如果is_send为false的时候， para为recv
-    if (!is_send)
-        para = MessageHeader::RECV;
-    _generator.set_level_options(MessageHeader::TEXT_SYS, MessageHeader::ADD_USER, para);
-    _generator.set_target_user_uuid(uuid);
-    // 获取自己的密匙的内容
-    _generator.set_content(u_m->get_key_content(User_Manager::get_self_pub_path()), false);
-
-    send_message(_generator.get_header());
-    send_message(_generator.get_content(), _generator.get_content_size());
-
-    pthread_mutex_unlock(&_is_send_message);
-}
- */
-
 MessageSender::MessageSender() {
-    log = Log::getInstance();
-    lang = Language::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
 }
 
-void MessageReceiver::InitMessageReceiver() {
+void MessageReceiver::startInit() {
     _socket_fd = 0;
-    log = Log::getInstance();
-    lang = Language::getInstance();
+    log = Log::ptr;
+    lang = Language::ptr;
     _socket_fd = 0;
 }
 
@@ -461,7 +360,7 @@ std::shared_ptr<unsigned char> MessageReceiver::get_content() {
     return _buf;
 }
 
-bool MessageReceiver::read_header() {
+int MessageReceiver::read_header() {
     int total_len = -1;
     // 读取头标记，头标记以\n结尾
     do {
@@ -469,21 +368,19 @@ bool MessageReceiver::read_header() {
         auto ret = read(_socket_fd, header + total_len, 1);
         if (ret < 0) {
             log->log((std::string)"[error] MessageReceiver: read header error: %e, last time read:" + header);
-            _pConnector->close_connect();
-            return false;
+            return -1;
         } else if (ret == 0) {
-            _pConnector->close_connect();
             log->log((*lang)["MessageReceiver_close_connect"]);
-            return false;
+            return 0;
         }
 
     }while (total_len < 100 && *(header + total_len) != '\n');
     // 设置读到的长度
     header_len = total_len + 1; // total_len的长度是消息的长度， 不包含最后的\n
-    return true;
+    return header_len;
 }
 
-bool MessageReceiver::read_content() {
+int MessageReceiver::read_content() {
     // 读取内容
     if (!_is_content) {
         log->log((*lang)["MessageReceiver_read_content_error"]);
@@ -499,14 +396,13 @@ bool MessageReceiver::read_content() {
     ret = read(_socket_fd, _buf.get(), _content_len);
     if (ret < 0) {
         log->log((*lang)["MessageReceiver_read_error"]);
-        return false;
+        return -1;
     } else if (ret == 0) {
         log->log("target user close the connect");
-        _pConnector->close_connect();
-        return false;
+        return 0;
     }
     // 正常读完所有的消息
-    return true;
+    return ret;
 }
 
 void MessageReceiver::set_fd(int fd) {
@@ -516,11 +412,6 @@ void MessageReceiver::set_fd(int fd) {
 int MessageReceiver::get_fd() const {
     return _socket_fd;
 }
-
-void MessageReceiver::set_connector(Server_Connector * tar) {
-    _pConnector = tar;
-}
-
 
 MessageReceiver::MessageReceiver() {
 
