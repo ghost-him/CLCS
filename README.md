@@ -169,14 +169,12 @@ c++真的是越学越不会。。。难哭了。。。
 
 ### TODO
 
-#### 当前版本（version 0.3.0）
+#### 当前版本（version 0.4.1）
 
 * ALL DONE！
 
-#### 下一个版本（version 0.4.0）
+#### 下一个版本（version 0.5.0）
 
-* 尝试使用`json`来代替纯文件操作来保存应用的配置
 * 使用`mariadb`数据库来保存用户的数据
 
 [![Stargazers over time](https://starchart.cc/ghost-him/CLCS.svg)](https://starchart.cc/ghost-him/CLCS)
-
