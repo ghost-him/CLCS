@@ -107,6 +107,9 @@ bool WriteUser::write_file(std::map<std::string, User> & user_store) {
     // 一个一个的写如文件
     for (auto& i : user_store) {
         ofs << get_user_message(i.second) << "\n";
+#ifdef IS_DEBUG
+        std::cerr << "write user message to file " << get_user_message(i.second) << std::endl;
+#endif
     }
     // 关闭文件
     ofs.close();

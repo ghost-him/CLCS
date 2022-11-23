@@ -55,7 +55,7 @@ void Command_Service::update(const std::vector<std::string>& command) {
             return ;
         }
         for (auto i = 1; i < command.size(); i++) {
-            // 获取当前 命令-参数 的指针， 检查是否为空指针
+            // 获取当前 命令-参数go 的指针， 检查是否为空指针
             // 若为空指针， 则表示没有当前的命令
             auto temp = (*com).get(command[i]);
             if (temp == nullptr) {

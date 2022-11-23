@@ -83,6 +83,7 @@ RSA_Security::~RSA_Security() {
 }
 
 bool RSA_Security::set_and_read_key(const std::string & str) {
+    log->log("RSA_security set key path: " + str + " and read key");
     return set_key_path(str) && read_key();
 }
 
@@ -102,6 +103,7 @@ bool RSA_encrypt::read_key() {
     if (_pkey == nullptr) {
         key_path = nullptr;
         log->log((*lang)["RSA_encrypt_read_public_key_failed"] + ERR_reason_error_string(ERR_get_error()));
+        error = ERR_reason_error_string(ERR_get_error());
         return false;
     }
     // 关闭文件
@@ -113,7 +115,7 @@ bool RSA_encrypt::read_key() {
 bool RSA_encrypt::set_key_path(const std::string & path) {
     // 检测是否存在该文件
     if (access(path.c_str(), F_OK) != 0) {
-        log->log((*lang)["RSA_encrypt_incorrect_path"]);
+        log->log((*lang)["RSA_encrypt_incorrect_path"] + path);
         return false;
     }
     _key_path = path;
@@ -122,6 +124,9 @@ bool RSA_encrypt::set_key_path(const std::string & path) {
 
 bool RSA_encrypt::convert() {
     // 清空上次的内容
+#ifdef IS_DEBUG
+    std::cerr << "rsa_encrypt start convert" << std::endl;
+#endif
     memset(_output_text, 0, sizeof _output_text);
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(_pkey, nullptr);
     EVP_PKEY_encrypt_init(ctx);
@@ -130,30 +135,14 @@ bool RSA_encrypt::convert() {
 
     if (!EVP_PKEY_encrypt(ctx, _output_text, &_output_len, reinterpret_cast<const unsigned char *>(_input_text), (size_t)strlen(_input_text))){
         log->log((*lang)["RSA_encrypt_convert_error"] + ERR_reason_error_string(ERR_get_error()));
+        error = ERR_reason_error_string(ERR_get_error());
         return false;
     }
     return true;
 }
 
-void RSA_encrypt::operator=(const char * str) {
-    int len = strlen(str);
-    memcpy(_input_text, str, len);
-    // 将末尾置为0
-    _input_text[len] = '\0';
-    // 转换
-    convert();
-}
-
-void RSA_encrypt::operator=(const std::string& str) {
-    operator=(str.c_str());
-}
-
-RSA_encrypt::operator const unsigned char *() {
-    return _output_text;
-}
-
 size_t RSA_encrypt::size() {
-    return _output_len;
+    return EVP_PKEY_get_size(_pkey);
 }
 
 void RSA_encrypt::set_input(const std::string& str) {
@@ -188,6 +177,7 @@ bool RSA_decrypt::read_key() {
     if (_pkey == nullptr) {
         key_path = nullptr;
         log->log((*lang)["RSA_decrypt_read_public_key_failed"] + ERR_reason_error_string(ERR_get_error()));
+        error = ERR_reason_error_string(ERR_get_error());
         return false;
     }
     key_path = nullptr;
@@ -199,7 +189,7 @@ bool RSA_decrypt::read_key() {
 bool RSA_decrypt::set_key_path(const std::string & path) {
     // 检测是否存在该文件
     if (access(path.c_str(), F_OK) != 0) {
-        log->log((*lang)["RSA_decrypt_incorrect_path"]);
+        log->log((*lang)["RSA_decrypt_incorrect_path"] + path);
         return false;
     }
     _key_path = path;
@@ -209,6 +199,9 @@ bool RSA_decrypt::set_key_path(const std::string & path) {
 * 将加密的信息解密
 */
 bool RSA_decrypt::convert() {
+#ifdef IS_DEBUG
+    std::cerr << "rsa_decrypt start convert" << std::endl;
+#endif
     // 清空上一次的信息
     memset(_output_text, '\0', sizeof _output_text);
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(_pkey, nullptr);
@@ -218,13 +211,14 @@ bool RSA_decrypt::convert() {
     // 转换信息
     if (!EVP_PKEY_decrypt(ctx, reinterpret_cast<unsigned char *>(_output_text), &_output_len, _input_text, _output_len)){
         log->log((*lang)["RSA_decrypt_convert_error"] + ERR_reason_error_string(ERR_get_error()));
+        error = ERR_reason_error_string(ERR_get_error());
         return false;
     }
     return true;
 }
 
 size_t RSA_decrypt::size() {
-    return _output_len;
+    return EVP_PKEY_get_size(_pkey);
 }
 
 

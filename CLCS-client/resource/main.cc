@@ -7,6 +7,9 @@
 #include "stdinc.h"
 
 int main() {
+#ifdef IS_DEBUG
+    std::cerr << "enable the debug mode" << std::endl;
+#endif
 
     // 初始化各个模块
     Init::startInit();

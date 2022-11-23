@@ -77,7 +77,7 @@ void User_Manager::set_server_uuid(const std::string & uuid) {
 std::string User_Manager::get_pub_key_path(const std::string & uuid) {
     std::string res;
     if (_user_store.count(uuid) == 0) {
-        log->log("User_Manager: new uuid");
+        log->log((std::string)"User_Manager: new uuid:" + uuid);
         return res;
     }
     return _user_store[uuid].get_pub_path();

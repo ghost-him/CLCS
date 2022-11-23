@@ -202,6 +202,9 @@ void Epoll_Reactor::recvdata(std::list<Event>::iterator* event) {
         }while (total_len < 100 && *(now_event.header + total_len) != '\n');
         // 如果当前的内容不是头消息
         if (!check_header(now_event.header)) {
+#ifdef IS_DEBUG
+            std::cerr << "invalid header " <<now_event.header << std::endl;
+#endif
             return ;
         }
 
@@ -309,6 +312,9 @@ void Epoll_Reactor::start_listen() {
 
 void Epoll_Reactor::analysis(std::list<Event>::iterator * event) {
     Event& now_event = **event;
+#ifdef IS_DEBUG
+    std::cerr << "receive header" << now_event.header << " " << "content" << now_event._buf << std::endl;
+#endif
     switch (now_event.level) {
         case MessageHeader::RECALL: {
             del_event(now_event);
@@ -347,6 +353,10 @@ void Epoll_Reactor::analysis(std::list<Event>::iterator * event) {
 void Epoll_Reactor::send_self_recall(std::list<Event>::iterator *event) {
     Event& now_event = **event;
     // 发送头文件
+#ifdef IS_DEBUG
+    std::cerr << "start send_self_recall" << std::endl;
+#endif
+
     if (!send_message(now_event._socket_fd, reinterpret_cast<unsigned char*>(now_event.header), now_event.header_len)) {
         log->log("[error] send header error: %e");
         shutdown((*event)->_socket_fd, 2);
@@ -366,6 +376,10 @@ void Epoll_Reactor::send_self_recall(std::list<Event>::iterator *event) {
 }
 
 bool Epoll_Reactor::send_message(int fd, unsigned char * buf, int len) {
+#ifdef IS_DEBUG
+    std::cerr << "send message: " << buf << std::endl;
+#endif
+
     int remain_to_send = len;
     do{
         int ret = write(fd, buf + (len - remain_to_send), remain_to_send);
@@ -491,6 +505,9 @@ bool Epoll_Reactor::return_user_message(std::list<Event>::iterator* event) {
 }
 
 bool Epoll_Reactor::forwarding_message(std::list<Event>::iterator * event) {
+#ifdef IS_DEBUG
+    std::cerr << "start forwarding_message" << std::endl;
+#endif
     // 将消息原封不动地转发到target_uuid上
     Event& now_event = **event;
     if (_user_store.count(now_event.target_uuid) == 0) {
@@ -504,9 +521,11 @@ bool Epoll_Reactor::forwarding_message(std::list<Event>::iterator * event) {
     // 复制消息的内容
     target._buf = now_event._buf;
     target.content_len = now_event.content_len;
+
     del_event(target);
     set_event(*target_user, target._socket_fd, send_self_recall, target_user);
     add_event(EPOLLOUT, *target_user);
+
     return true;
 }
 

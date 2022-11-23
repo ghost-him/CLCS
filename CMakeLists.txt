@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 project(CLCS
-        VERSION 0.4.0
+        VERSION 0.4.1
         )
 
 # 只有c++20的版本才可以编译通过
@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
 
 set(EXECUTABLE_OUTPUT_PATH ./${CMAKE_GLOBAL_AUTOGEN_TARGET_NAME}/)
 

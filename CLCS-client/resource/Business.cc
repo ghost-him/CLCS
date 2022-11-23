@@ -97,23 +97,32 @@ void Business::Testing_network_latency() {
 }
 
 void Business::start_accept_from_server() {
+#ifdef IS_DEBUG
+    std::cerr << "start accept from server" << std::endl;
+#endif
     // 检查当前的连接状态
     if (!s_c->get_connect_status()) {
         log->log("[error] business: connect error , try to reconnect");
         std::cout << "连接失败， 尝试重新连接" << std::endl;
         sleep(5);
+        re_connect_server();
         return ;
+    } else {
+        log->log("business accept server : success connection");
     }
     // 尝试读取消息， 查看是否可以成功读取
     int ret;
-    if ((ret = ma.get_command(&mr)) < 0) {
+    if ((ret = ma.get_command(&mr), ret) <= 0) {
         if (ret == 0) {
+            log->log("business accept server : close connection");
             s_c->close_connect();
         }
         log->log("[error] business: read message error, %e");
         std::cout << "读取消息失败" << std::endl;
         sleep(5);
         return ;
+    } else {
+        log->log("business accept server : success get command");
     }
 
     // 判断消息是否在自己的信息库中
@@ -156,6 +165,9 @@ void Business::start_accept_from_server() {
             break;
         }
         case MessageHeader::TEXT_CHAT: {
+#ifdef IS_DEBUG
+            std::cerr << "receive message" << std::endl;
+#endif
             // 接受到了消息
             std::cout << "---receive message---" << std::endl;
             // 将当前接受到的消息显示出来
@@ -180,6 +192,11 @@ void Business::start_accept_from_server() {
             log->log((*lang)["Business_invalid_level"] + level);
         }
     }
+
+#ifdef IS_DEBUG
+    std::cerr << "end accept from server" << std::endl;
+#endif
+
 }
 
 
@@ -188,9 +205,13 @@ void Business::recall_request(const std::string &message) {
 }
 
 void Business::send_message(const std::string &name, const std::string &message) {
+
     User *user = u_m->find_user(name);
     if (user == nullptr) {
         std::cout << "找不到该用户" << std::endl;
+#ifdef IS_DEBUG
+        std::cerr << "找不到用户：" << name << std::endl;
+#endif
         return;
     }
     // 找到了用户
@@ -272,6 +293,10 @@ void Business::display_recall(const std::string &message) {
 }
 
 void Business::display_user_message(const std::string &uuid, const std::string &message) {
+#ifdef IS_DEBUG
+    std::cerr << "display user message :" << "uuid " << uuid << " message " << message << std::endl;
+#endif
+
     auto ti = time(nullptr);
     // 查找用户
     auto ptr = u_m->find_user(const_cast<std::string &>(uuid));

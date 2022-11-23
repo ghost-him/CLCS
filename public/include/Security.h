@@ -79,6 +79,9 @@ public:
 
     virtual size_t size() = 0;
 
+    // 获取错误信息
+    std::string get_error() { return error;};
+
 protected:
     // 当前的密匙
     EVP_PKEY *_pkey;
@@ -88,6 +91,8 @@ protected:
     Log* log;
     // 信息系统
     Language* lang;
+    // 错误信息
+    std::string error;
 };
 
 /*
@@ -108,16 +113,6 @@ public:
      * 加密信息
      */
     bool convert() override;
-    /*
-     * 读取被加密的信息，然后进行加密
-     */
-    void operator=(const char *);
-    void operator=(const std::string&);
-
-    /*
-     * 强制转换类型
-     */
-    operator const unsigned char *();
 
     /*
      * 获取数组的长度

@@ -12,14 +12,10 @@
 int main() {
     // 初始化各个模块
     Init::startInit();
-    std::cerr << "init end" << std::endl;
     auto thread_pool = ThreadPool::ptr;
     std::cout << "--continue-- " << std::endl;
     thread_pool->commit(TaskLevel::DO_ONCE, Epoll_Reactor::start_listen);
     thread_pool->startThreadPool();
-
-    std::cerr << "start thread_pool" << std::endl;
-
     std::cout << "服务器运行ip: " << (*Setting::ptr)["target_server_ip"] << " port: "
     << (*Setting::ptr)["target_server_port"] << "\n";
 

@@ -39,6 +39,12 @@
 #include <nlohmann/json.hpp>
 #include <mysql/mysql.h>
 
+/*
+ * 控制是否开启调试模式
+ */
+
+// #define IS_DEBUG
+
 class DefaultOption;
 class Event;
 class Epoll_Reactor;

@@ -43,7 +43,6 @@ void Command_Analysis::check(std::string && str) {
         }
         right ++;
     }
-
     _service->update(command);
 }
 

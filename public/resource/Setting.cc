@@ -30,15 +30,15 @@ void Setting::startInit() {
 
         // 第一次运行程序
         first_time_run();
-        std::cerr << "完成初次支行" << std::endl;
         _write_json.write_json();
         _read_json.setFilePath(path);
     } else {
         // 已经存在json文件了
         // 将json_ptr指向读取出来的 json 文件
 
-        _read_json.read_json();
         _read_json.set_json_ptr(&_json);
+        _read_json.read_json();
+
 
         // 验证读到的json文件是不是完整的大小
         if (_json.size() != DefaultOption::store.size()) {
