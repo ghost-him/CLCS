@@ -16,7 +16,7 @@ public:
     /*
      * 获取指定字符串的ip
      */
-    const std::string& operator[](const std::string&);
+    const std::string operator[](const std::string&);
 
     /*
      * 设置目标的语言系统
@@ -37,7 +37,10 @@ private:
      */
     void reload(const std::string&);
     // 存取模块
-    WriteWithLine _writeLine;
+    // WriteWithLine _writeLine;
+    nlohmann::json _json_ptr;
+    // 读取 json 文件
+    ReadJson _read_json;
     // 是否以及被初始化过
     bool is_inited = false;
     Log* log;

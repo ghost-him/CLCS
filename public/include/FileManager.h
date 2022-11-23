@@ -33,18 +33,17 @@ protected:
 
 };
 
-class ReadWithLine : public ReadFile {
-public:
-    /*
-     * 查看当前的一行是否合法,若合法，则读取
-     * unordered_map : 相互匹配的字符串
-     *
-     * 不合法的条件：
-     * 1. : 在段首和段尾
-     * 2. 单词之间存在空格
-     */
+/*
+ * 读取一个json文件
+ * 获取当前json文件的指针
+ */
 
-    void readFile(std::unordered_map<std::string, std::string>&);
+class ReadJson : public ReadFile {
+public :
+    void read_json();
+    void set_json_ptr(nlohmann::json*);
+private:
+    nlohmann::json* _json;
 };
 
 /* TODO 完成此函数
@@ -78,24 +77,16 @@ protected:
 
     // 是否存在异常
     bool _is_exist_error = false;
-
-
 };
 
-class WriteWithLine : public WriteFile {
+class WriteJson : public WriteFile {
 public:
-    /*
-     * 快速读取或修改某个值
-     */
-    std::string& operator[](const std::string&);
-
-    /*
-     * 查看当前的一行是否合法,若合法，则读取
-     */
-
-    void writeFile();
-    std::unordered_map<std::string, std::string> _store;
+    void set_json_to_write(nlohmann::json *json_ptr);
+    void write_json();
+private:
+    nlohmann::json* _json_ptr;
 };
+
 
 /* TODO 完成此函数
  * 存放用户
@@ -107,6 +98,28 @@ private:
     static std::string get_user_message(User&);
 };
 
+class CreateFile {
+public:
+    // 设置目标路径
+    void set_target_path(const std::string & path);
+
+    virtual void create_target() = 0;
+
+protected:
+    // 目标地址
+    std::string _file_path;
+};
+
+class CreateJson : public CreateFile {
+public :
+    // 创建目标json
+    void create_target() override;
+    // 设置要创建的json
+    void set_json(const nlohmann::json & json);
+private:
+    nlohmann::json _json;
+
+};
 
 /*
  * 设计模式：单例模式

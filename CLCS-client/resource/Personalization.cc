@@ -174,32 +174,34 @@ std::function<void()> Setting::first_time_run = [](){
     std::cout << "1. 简体中文(默认/default)\n2. english\n" << std::endl;
     char temp = getchar();
     if (temp == '2')
-        _writeFile["sys_language"] = "en_US";
+        set("sys_language", "en_US");
 
     std::cout << "请输入目标服务器的ip:" << std::endl;
     std::cout << "Please enter the ip of the target server:\n" << std::endl;
     std::string targetIp;
     std::cin >> targetIp;
-    _writeFile["target_server_ip"] = targetIp;
+    set("target_server_ip", targetIp);
 
     std::cout << "请输入目标服务器的端口:" << std::endl;
     std::cout << "Please enter the port of the target server:\n" << std::endl;
     int port;
     std::cin >> port;
-    _writeFile["target_server_port"] = std::to_string(port);
+    set("target_server_port", std::to_string(port));
 
     auto hardware_cur = std::thread::hardware_concurrency();
-    _writeFile["threadpool_max_thread"] = std::to_string(hardware_cur * 4);
-    _writeFile["threadpool_min_thread"] = std::to_string(hardware_cur);
-    _writeFile["threadpool_grow_thread"] = std::to_string(hardware_cur);
-    _writeFile["threadpool_set_check_time"] = "5";
+
+    set("threadpool_max_thread", std::to_string(hardware_cur * 4));
+    set("threadpool_min_thread", std::to_string(hardware_cur));
+    set("threadpool_grow_thread", std::to_string(hardware_cur));
+    set("threadpool_set_check_time", "5");
+
 
     // 初始化uuid
     uuid_t uuid;
     uuid_generate(uuid);
     char uuid_c[37];
     uuid_unparse(uuid, uuid_c);
-    _writeFile["uuid"] = uuid_c;
+    set("uuid", uuid_c);
 
     // 初始化自己的密匙
     RSA_controller generator;
@@ -210,8 +212,8 @@ std::function<void()> Setting::first_time_run = [](){
     generator.set_public_key_path(pub_path);
     generator.generate_keys();
 
-    _writeFile["pub_key_path"] = pub_path;
-    _writeFile["pri_key_path"] = pri_path;
+    set("pub_key_path", pub_path);
+    set("pri_key_path", pri_path);
 
     std::cout << "初始化完成" << std::endl;
 };

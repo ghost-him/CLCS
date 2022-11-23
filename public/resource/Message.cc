@@ -207,8 +207,8 @@ const std::string& MessageAnalysis::get_content() {
     }
     // 定义一个缓存区
     unsigned char buf[BUFSIZ];
-    int len = _message_size;
-    int read_len;
+    size_t len = _message_size;
+    size_t read_len;
     // 当前的字节块
     int block = 0;
     while (1) {
@@ -218,7 +218,7 @@ const std::string& MessageAnalysis::get_content() {
         if (read_len == 0)
             break;
         // 每次减读到的长度
-        len = std::max(len - dec.size(), 0);
+        len = std::max(len - dec.size(), (size_t)0);
         // 读取中间一段的字节块
         memcpy(buf, _raw.get() + block * read_len, read_len);
         // 解码当前的字节块

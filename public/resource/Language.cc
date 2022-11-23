@@ -2,12 +2,13 @@
 
 Language* Language::ptr = new Language;
 
-const std::string& Language::operator[](const std::string& str) {
-    // 如果找不到目标
-    if (_writeLine._store.count(str) == 0) {
-       log->log("[warn] language system cannot find target: " + str + "\n");
+const std::string Language::operator[](const std::string& str) {
+    if (_json_ptr.contains(str)) {
+        return _json_ptr[str];
     }
-    return _writeLine[str];
+    // 如果找不到
+    log->log("[warn] language system cannot find target: " + str + "\n");
+    return str;
 }
 
 void Language::set_language(const std::string & str) {
@@ -44,21 +45,23 @@ void Language::reload(const std::string& lang) {
     if (access(target_path.c_str(), F_OK) == -1) {
         // 如果语言不存在， 则创建一个新的文件
         log->log("[error] language system: file not exist: %e");
-        _writeLine.setFilePath(target_path);
-        _writeLine._store = DefaultOption::language;
-        _writeLine.writeFile();
+        CreateJson json_creater;
+        json_creater.set_json(DefaultOption::language);
+        json_creater.set_target_path(target_path);
+        json_creater.create_target();
         return ;
     }
     // 文件存在
 
-    // 清空文件
-    _writeLine._store.clear();
+
     // 读文件
-    ReadWithLine rd;
-    rd.setFilePath(target_path);
-    rd.readFile(_writeLine._store);
+    // ReadWithLine rd;
+    _read_json.setFilePath(target_path);
+    _read_json.set_json_ptr(&_json_ptr);
+    _read_json.read_json();
+
     // 检查读到的数量和预设的数量是否一致
-    if (_writeLine._store.size() != DefaultOption::language.size()) {
+    if (_json_ptr.size() != DefaultOption::language.size()) {
         log->log("[error] language sys: Incorrect number of entries\n");
         log->exit_process();
     }

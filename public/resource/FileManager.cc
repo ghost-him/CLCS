@@ -12,49 +12,23 @@ bool ReadFile::is_error() const {
     return _is_exist_error;
 }
 
-void ReadWithLine::readFile(std::unordered_map<std::string, std::string> &target) {
+void ReadJson::read_json() {
     std::ifstream ifs;
-    ifs.open(_file_path, std::ios::in);
-    if (!ifs.is_open()) {
+    ifs.open(_file_path);
+    if(ifs.is_open()) {
+        // 如果打开文件
+        _is_exist_error = false;
+        // 读取文件
+        ifs >> (*_json);
+    } else {
+        // 如果没有打开文件
         _is_exist_error = true;
-        Log::ptr->log("[warn] MessageGenerator: message level not exist :" + _file_path);
-        return ;
-    }
-    _is_exist_error = false;
-
-    std::string line;
-    while (!ifs.eof()) {
-        std::getline(ifs, line);
-        bool is_valid = true;           // 当前的行是否合法
-        int mid = line.find_first_of(':');
-        int start = line.find_first_of('"');
-        int end = line.find_last_of('"');
-        std::string a, b;
-        do{
-            // 当缺少 : 或 " 的时候
-            if (mid == -1 || start == -1 || end == -1) {
-                is_valid = false;
-                break;
-            }
-            if (mid - start - 2 <= 0 || end - mid - 2 <= 0) {
-                is_valid = false;
-                break;
-            }
-            a = line.substr(start + 1, mid - start - 2);
-            b = line.substr(mid + 2, end - mid - 2);
-
-            if (mid + 1 <= line.size() && (line[mid - 1] == ' ' || line[mid + 1] == ' ')) {
-                is_valid = false;
-                break;
-            }
-
-        }while(0);
-        if (!is_valid)
-            Log::ptr->log("[warn] invalid line");
-        else
-            target[a] = b;
     }
     ifs.close();
+}
+
+void ReadJson::set_json_ptr(nlohmann::json* json) {
+    _json = json;
 }
 
 std::pair<User, bool> ReadUser::read_user_message(std::string && user_massage) {
@@ -100,36 +74,23 @@ bool WriteFile::is_error() const {
     return _is_exist_error;
 }
 
-std::string &WriteWithLine::operator[](const std::string & str) {
-    if (_store.count(str) == 0) {
-        _store[str] = "";
-        return _store[str];
-    } else {
-        return _store[str];
-    }
+void WriteJson::set_json_to_write(nlohmann::json *json_ptr) {
+    _json_ptr = json_ptr;
 }
 
-
-void WriteWithLine::writeFile() {
-    auto log = Log::ptr;
+void WriteJson::write_json() {
     std::ofstream ofs;
     if (_file_path.empty()) {
-        _is_exist_error = true;
-        log->log("[error] WriteWithLine: invalid path" + _file_path + "\n");
-        return;
-    }
-
-    _is_exist_error = false;
-
-    ofs.open(_file_path, std::ios::trunc | std::ios::out);
-
-    if (!ofs.is_open()) {
-        log->log("[error] WriteWithLine: can not open the file");
+        Log::ptr->log("[warn] invalid path: " + _file_path);
         return ;
     }
 
-    for (auto& i : _store) {
-        ofs << '"' << i.first << "\":\"" << i.second << '"' << std::endl;
+    ofs.open(_file_path, std::ios::trunc | std::ios::out);
+
+    if (ofs.is_open()) {
+        ofs << (*_json_ptr).dump(4);
+    } else {
+        Log::ptr->log("[warn] can not open the target path: " + _file_path);
     }
 
     ofs.close();
@@ -162,6 +123,28 @@ std::string WriteUser::get_user_message(User & user) {
     res += " ";
     res += user.get_name();
     return std::move(res);
+}
+
+void CreateFile::set_target_path(const std::string &path) {
+    _file_path = path;
+}
+
+void CreateJson::create_target() {
+    std::ofstream ofs;
+    ofs.open(_file_path);
+
+    // 检查文件是否已经打开了
+    if (ofs.is_open()) {
+        ofs << _json;
+    } else {
+        Log::ptr->log("[error] createJson: invalid path:" + _file_path);
+    }
+    // 关闭文件
+    ofs.close();
+}
+
+void CreateJson::set_json(const nlohmann::json &json) {
+    _json = json;
 }
 
 FileManager* FileManager::ptr = new FileManager;

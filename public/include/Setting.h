@@ -21,16 +21,21 @@ public:
      */
     static std::function<void()> first_time_run;
 
-    std::string& operator[](const std::string &);
+    std::string operator[](const std::string &);
+
+    static void set(const std::string&, const std::string&);
 
     // 保存设置
     static void save_setting();
 
 private:
     Setting();
+    static nlohmann::json _json;
     static FileManager* _FileManager;
-    static ReadWithLine _readFile;
-    static WriteWithLine _writeFile;
+    // static ReadWithLine _readFile;
+    static ReadJson _read_json;
+    // static WriteWithLine _writeFile;
+    static WriteJson _write_json;
     static Log* log;
 };
 

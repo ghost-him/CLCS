@@ -5,6 +5,7 @@ Command_Analysis *Command_Analysis::ptr = new Command_Analysis;
 void Command_Analysis::Init_Analysis_System() {
     log = Log::ptr;
     _service = nullptr;
+    log->log("[info] command analysis init end");
 }
 
 void Command_Analysis::check(std::string && str) {

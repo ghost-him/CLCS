@@ -23,7 +23,7 @@ public:
     /*
      * 生成密钥
      */
-    bool generate_keys(int len = 2048, int bignum = 17);
+    bool generate_keys(int len = 2048);
 private:
     // 公钥路径
     std::string _pub_path;
@@ -77,11 +77,11 @@ public:
      */
     virtual bool convert() = 0;
 
-    virtual int size() = 0;
+    virtual size_t size() = 0;
 
 protected:
     // 当前的密匙
-    RSA *_rsa;
+    EVP_PKEY *_pkey;
     // 密匙路径
     std::string _key_path;
     // 日志系统
@@ -122,7 +122,7 @@ public:
     /*
      * 获取数组的长度
      */
-    int size() override;
+    size_t size() override;
     /*
      * 设置被加密的信息
      */
@@ -140,6 +140,8 @@ private:
     char _input_text[BUFSIZ];
     // 输出的字符
     unsigned char _output_text[BUFSIZ];
+    // 输出的字符的长度
+    size_t _output_len;
 };
 /*
  * 解密模块
@@ -160,19 +162,10 @@ public:
      * TODO 当信息解密失败的时候， 则重新向目标用户发送公匙
      */
     bool convert() override;
-    /*
-     * 读取被加密的信息，然后进行解密
-     */
-    void operator=(const unsigned char *);
-    /*
-     * 强制类型转换
-     */
-    operator char*();
-    operator std::string();
 
-    int size() override;
+    size_t size() override;
 
-    void set_input(const unsigned char *, int);
+    void set_input(const unsigned char *str, size_t len);
     /*
      * 获取得到的解密信息
      */
@@ -183,5 +176,8 @@ private:
     unsigned char _input_text[BUFSIZ];
     // 输出的字符
     char _output_text[BUFSIZ];
+    // 输出的长度
+    size_t _output_len;
+
 };
 

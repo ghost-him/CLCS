@@ -7,12 +7,11 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
-#include <signal.h>
 #include <sys/time.h>
-
 
 #include <cerrno>
 #include <cstring>
+#include <csignal>
 
 #include <iostream>
 #include <fstream>
@@ -31,11 +30,14 @@
 #include <list>
 #include <memory>
 
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
 #include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 #include <uuid/uuid.h>
+
+#include <nlohmann/json.hpp>
+#include <mysql/mysql.h>
 
 class DefaultOption;
 class Event;
@@ -44,7 +46,7 @@ class Epoll_Reactor;
 //class ReadWithLine;
 //class ReadUser;
 //class WriteFile;
-class WriteWithLine;
+//class WriteWithLine;
 //class WriteUser;
 class FileManager;
 class Init;
