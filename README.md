@@ -177,4 +177,6 @@ c++真的是越学越不会。。。难哭了。。。
 
 * 使用`mariadb`数据库来保存用户的数据
 
+* 使用智能指针来代替大部分普通指针，同时修复内存泄露的情况
+
 [![Stargazers over time](https://starchart.cc/ghost-him/CLCS.svg)](https://starchart.cc/ghost-him/CLCS)
