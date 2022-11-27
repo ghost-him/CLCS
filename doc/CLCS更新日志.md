@@ -1,4 +1,4 @@
-# CLCS大致开发流程
+# CLCS更新日志
 
 ##  v0.1.0
 
@@ -117,3 +117,5 @@
    10. `Business`,`Epoll_Reactor`,`Personalization`类等
 3. 修改了`Message_Process`类的实现细节，节省了内存的开销，提高了性能
 4. 修改了`MessageSender`的设计模式，改为了单例模式
+5. 修复了服务端`epoll_reactor`的一个潜在的bug（listen死循环 ）
+6. 修复了客户端在结束通信时退出异常的错误

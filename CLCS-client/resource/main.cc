@@ -36,12 +36,18 @@ int main() {
         is_empty = false;
 
         // 如果command为quit, 则退出程序
-        if (command == "quit")
+        if (command == "quit") {
+            Server_Connector::ptr()->close_connect();
             break;
+        }
+
         Command_Analysis::ptr()->check(std::move(command));
     }
 
     // 保存设置
     Business::save();
+#ifdef IS_DEBUG
+    std::cerr << "end the program" << std::endl;
+#endif
     return 0;
 }

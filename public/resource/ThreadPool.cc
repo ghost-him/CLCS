@@ -101,9 +101,16 @@ void ThreadPool::startThreadPool() {
 }
 
 ThreadPool::~ThreadPool() {
+#ifdef IS_DEBUG
+    std::cerr << "start end threadpool" << std::endl;
+#endif
     self._is_closed = true;
     // 等待守护线程退出
     pthread_join(self._daemon_thread, nullptr);
+
+#ifdef IS_DEBUG
+    std::cerr << "daemon thread end" << std::endl;
+#endif
 
     pthread_cond_broadcast(&self._task_not_empty);
     // 等待自线程退出
@@ -111,6 +118,9 @@ ThreadPool::~ThreadPool() {
         pthread_join(t_id, nullptr);
     }
     // 单例模式， 线程池贯穿整个程序的始终，只有当程序结束的时候才会销毁， 所以无需手动delete
+#ifdef IS_DEBUG
+    std::cerr << "finish end threadpool" << std::endl;
+#endif
 }
 
 
@@ -160,8 +170,15 @@ void* ThreadPool::thread_work(void * arg) {
         pthread_mutex_lock(&self._thread_counter);
         self._working_thread++;
         pthread_mutex_unlock(&self._thread_counter);
+#ifdef IS_DEBUG
+        std::cerr << "threadpool start a task" << std::endl;
+#endif
         // 执行任务
         task._task();
+
+#ifdef IS_DEBUG
+        std::cerr << "threadpool end a task" << std::endl;
+#endif
 
         pthread_mutex_lock(&self._thread_counter);
         self._working_thread--;

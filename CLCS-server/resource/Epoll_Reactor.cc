@@ -203,7 +203,7 @@ void Epoll_Reactor::recvdata(std::list<Event>::iterator* event) {
         // 如果当前的内容不是头消息
         if (!check_header(now_event.header)) {
 #ifdef IS_DEBUG
-            std::cerr << "invalid _header " <<now_event._header << std::endl;
+            std::cerr << "invalid _header " <<now_event.header << std::endl;
 #endif
             return ;
         }
@@ -290,7 +290,7 @@ void Epoll_Reactor::senddata(int socketfd, std::list<Event>::iterator* event) {
  */
 
 void Epoll_Reactor::start_listen() {
-    while (1) {
+
         int nfd = epoll_wait(_epoll_root, _run_events, MAX_EVENTS + 1, -1);
         if (nfd < 0) {
             log->log((*lang)["epoll_reactor_wait_error"]);
@@ -307,13 +307,13 @@ void Epoll_Reactor::start_listen() {
                 temp._func();
             }
         }
-    }
+
 }
 
 void Epoll_Reactor::analysis(std::list<Event>::iterator * event) {
     Event& now_event = **event;
 #ifdef IS_DEBUG
-    std::cerr << "receive _header" << now_event._header << " " << "content" << now_event._buf << std::endl;
+    std::cerr << "receive _header" << now_event.header << " " << "content" << now_event._buf << std::endl;
 #endif
     switch (now_event.level) {
         case MessageHeader::RECALL: {

@@ -14,7 +14,7 @@ int main() {
     Init::startInit();
     auto thread_pool = ThreadPool::ptr;
     std::cout << "--continue-- " << std::endl;
-    thread_pool()->commit(TaskLevel::DO_ONCE, Epoll_Reactor::start_listen);
+    thread_pool()->commit(TaskLevel::DO_KEEP, Epoll_Reactor::start_listen);
     thread_pool()->startThreadPool();
     std::cout << "服务器运行ip: " << (*Setting::ptr())["target_server_ip"] << " port: "
     << (*Setting::ptr())["target_server_port"] << "\n";

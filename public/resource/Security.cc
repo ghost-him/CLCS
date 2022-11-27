@@ -64,12 +64,22 @@ bool RSA_controller::generate_keys(int len) {
 
 
 RSA_Security::RSA_Security() {
-    _pkey = EVP_PKEY_new();
+#ifdef IS_DEBUG
+    std::cerr << "_pkey new" << std::endl;
+#endif
+    _pkey = nullptr;
+    std::cerr << "create pointer: " << _pkey << std::endl;
 }
 
 
 RSA_Security::~RSA_Security() {
-    EVP_PKEY_free(_pkey);
+    if (_pkey != nullptr) {
+#ifdef IS_DEBUG
+        std::cerr << "_pkey delete" << std::endl;
+#endif
+        std::cerr << "delete pointer: " << _pkey << std::endl;
+        EVP_PKEY_free(_pkey);
+    }
 }
 
 
