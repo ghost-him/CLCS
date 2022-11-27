@@ -3,28 +3,28 @@
  * 初始化static变量
  */
 
-Epoll_Reactor* Epoll_Reactor::_pEpoll_Reactor = new Epoll_Reactor;
+std::shared_ptr<Epoll_Reactor> Epoll_Reactor::_ptr(new Epoll_Reactor());
 int Epoll_Reactor::MAX_EVENTS = 0;
 int Epoll_Reactor::_epoll_root = 0;
 std::list<Event> Epoll_Reactor::_events;
 epoll_event* Epoll_Reactor::_run_events;
 int Epoll_Reactor::_serv_fd = 0;
-Log* Epoll_Reactor::log;
-Language* Epoll_Reactor::lang;
+std::shared_ptr<Log> Epoll_Reactor::log = nullptr;
+std::shared_ptr<Language> Epoll_Reactor::lang;
 MessageGenerator Epoll_Reactor::mg;
-User_Manager* Epoll_Reactor::u_m = nullptr;
+std::shared_ptr<User_Manager> Epoll_Reactor::u_m = nullptr;
 std::map<std::string, std::list<Event>::iterator*> Epoll_Reactor::_user_store;
 
 
-Epoll_Reactor* Epoll_Reactor::getInstance() {
-    return _pEpoll_Reactor;
+std::shared_ptr<Epoll_Reactor> Epoll_Reactor::ptr() {
+    return _ptr;
 }
 
 
 void Epoll_Reactor::Init_Epoll() {
-    log = Log::ptr;
-    lang = Language::ptr;
-    setting = Setting::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
+    setting = Setting::ptr();
     // 初始化变量
     MAX_EVENTS = std::stoi((*setting)["epoll_reactor_max_events"]);
     _max_connect = std::stoi((*setting)["epoll_reactor_max_connect"]);
@@ -84,7 +84,7 @@ void Epoll_Reactor::Init_Epoll() {
     set_event(now_event, _serv_fd, acception_connection);
     add_event(EPOLLIN, now_event);
     mg.startInit();
-    u_m = User_Manager::ptr;
+    u_m = User_Manager::ptr();
 }
 
 void Epoll_Reactor::set_ip(std::string& ip) {
@@ -203,7 +203,7 @@ void Epoll_Reactor::recvdata(std::list<Event>::iterator* event) {
         // 如果当前的内容不是头消息
         if (!check_header(now_event.header)) {
 #ifdef IS_DEBUG
-            std::cerr << "invalid header " <<now_event.header << std::endl;
+            std::cerr << "invalid _header " <<now_event._header << std::endl;
 #endif
             return ;
         }
@@ -313,7 +313,7 @@ void Epoll_Reactor::start_listen() {
 void Epoll_Reactor::analysis(std::list<Event>::iterator * event) {
     Event& now_event = **event;
 #ifdef IS_DEBUG
-    std::cerr << "receive header" << now_event.header << " " << "content" << now_event._buf << std::endl;
+    std::cerr << "receive _header" << now_event._header << " " << "content" << now_event._buf << std::endl;
 #endif
     switch (now_event.level) {
         case MessageHeader::RECALL: {
@@ -358,7 +358,7 @@ void Epoll_Reactor::send_self_recall(std::list<Event>::iterator *event) {
 #endif
 
     if (!send_message(now_event._socket_fd, reinterpret_cast<unsigned char*>(now_event.header), now_event.header_len)) {
-        log->log("[error] send header error: %e");
+        log->log("[error] send _header error: %e");
         shutdown((*event)->_socket_fd, 2);
         del_event(now_event);
         _events.erase(*event);
@@ -428,7 +428,7 @@ bool Epoll_Reactor::add_user(std::list<Event>::iterator * event) {
     new_user.set_uuid(now_event.source_uuid);
     // 设置公钥路径
     // 创建公钥文件
-    std::string pub_path = FileManager::ptr->get("keys") + now_event.source_uuid + ".pub";
+    std::string pub_path = FileManager::ptr()->get("keys") + now_event.source_uuid + ".pub";
     int file_fd = open(pub_path.c_str(), O_CREAT|O_RDWR, 0700);
     if (file_fd < 0) {
         log->log("[error] epoll_reactor: open file error:, %e");

@@ -26,7 +26,7 @@ public:
     int content_len = 0;            // 缓冲区的大小
 
     bool is_content = false;
-    std::shared_ptr<unsigned char> _buf; // 消息内容缓冲区
+    std::shared_ptr<unsigned char[]> _buf; // 消息内容缓冲区
 };
 /*
  * epoll 反应堆
@@ -35,7 +35,9 @@ public:
 
 class Epoll_Reactor {
 public:
-    static Epoll_Reactor* getInstance();
+    static std::shared_ptr<Epoll_Reactor> ptr();
+
+    ~Epoll_Reactor();
 
     /*
      * 初始化反应堆
@@ -149,9 +151,9 @@ public:
 
     static MessageGenerator mg;
 private:
-    static Epoll_Reactor* _pEpoll_Reactor;
+    static std::shared_ptr<Epoll_Reactor> _ptr;
     Epoll_Reactor();
-    ~Epoll_Reactor();
+
 
     /*
      * 守护函数， 用于连接
@@ -169,14 +171,14 @@ private:
     std::string _ip;        // ip地址
     int _max_connect;       // 最大的连接数
     // 获取其他模块的接口
-    static Log* log;
-    Setting* setting;
-    static Language* lang;
+    static std::shared_ptr<Log> log;
+    std::shared_ptr<Setting> setting;
+    static std::shared_ptr<Language> lang;
 
     // 通过uuid来查找目标在当前监听树中的位置
     static std::map<std::string, std::list<Event>::iterator*> _user_store;
 
     // 用户管理器
-    static User_Manager* u_m;
+    static std::shared_ptr<User_Manager> u_m;
 };
 

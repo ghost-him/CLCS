@@ -4,7 +4,11 @@
 /*
  * 创建一个对象
  */
-Log* Log::ptr = new Log;
+std::shared_ptr<Log> Log::_ptr(new Log());
+
+std::shared_ptr<Log> Log::ptr() {
+    return _ptr;
+}
 
 // TODO 优化此结构， 以方便以后添加新的功能
 void Log::log(const std::string& str) {
@@ -113,7 +117,7 @@ void Log::exit_process() {
 }
 
 Log::Log():
-    _ost(std::cerr), _is_console(true), _is_create(false){
+    _ost(std::cerr), _is_console(true) {
     _stream_lock = PTHREAD_MUTEX_INITIALIZER;
 }
 
@@ -122,5 +126,4 @@ Log::~Log() {
     if (_ofs.is_open()) {
         _ofs.close();
     }
-
 }

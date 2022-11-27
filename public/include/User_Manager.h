@@ -10,7 +10,7 @@
  */
 class User_Manager {
 public:
-    static User_Manager* ptr;
+    static std::shared_ptr<User_Manager> ptr();
     /*
      * 初始化用户管理器
      * 如果没有相应的储存文件， 则创建一个新的文件
@@ -79,6 +79,8 @@ public:
 
     const static std::string empty_uuid;
 private:
+    static std::shared_ptr<User_Manager> _ptr;
+
     User_Manager(){};
 
 
@@ -92,12 +94,10 @@ private:
     std::map<std::string, std::string> _uuid_store;
 
     // 日志系统
-    Log* log;
-    // 语言系统
-    Language* lang;
+    std::shared_ptr<Log> log;
     // 设置系统
-    Setting* setting;
+    std::shared_ptr<Setting> setting;
     // 文件管理器
-    FileManager* fm;
+    std::shared_ptr<FileManager> fm;
 };
 

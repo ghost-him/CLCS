@@ -41,9 +41,10 @@ protected:
 class ReadJson : public ReadFile {
 public :
     void read_json();
-    void set_json_ptr(nlohmann::json*);
+    void set_json_ptr(const std::shared_ptr<nlohmann::json>&);
 private:
-    nlohmann::json* _json;
+    // nlohmann::json* _json;
+    std::shared_ptr<nlohmann::json> _json;
 };
 
 /* TODO 完成此函数
@@ -81,10 +82,10 @@ protected:
 
 class WriteJson : public WriteFile {
 public:
-    void set_json_to_write(nlohmann::json *json_ptr);
+    void set_json_to_write(const std::shared_ptr<nlohmann::json>& json_ptr);
     void write_json();
 private:
-    nlohmann::json* _json_ptr;
+    std::shared_ptr<nlohmann::json> _json_ptr;
 };
 
 
@@ -115,9 +116,9 @@ public :
     // 创建目标json
     void create_target() override;
     // 设置要创建的json
-    void set_json(const nlohmann::json & json);
+    void set_json(const std::shared_ptr<nlohmann::json>& json);
 private:
-    nlohmann::json _json;
+    std::shared_ptr<nlohmann::json> _json;
 
 };
 
@@ -129,7 +130,7 @@ private:
 class FileManager {
     friend class Init;
 public:
-    static FileManager* ptr;
+    static std::shared_ptr<FileManager> ptr();
     /*
      * 提取输入的字符串对应的字符串
      * 若找不到，则返回默认的路径
@@ -137,6 +138,8 @@ public:
     std::string& get(const std::string&);
 
 private:
+    static std::shared_ptr<FileManager> _ptr;
+
     FileManager();
 
     std::unordered_map<std::string, std::string> _dir_path;

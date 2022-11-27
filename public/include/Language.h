@@ -11,8 +11,10 @@ class Setting;
 
 class Language {
 public:
-    static Language* ptr;
-
+    /*
+     * 获取唯一的实例
+     */
+    static std::shared_ptr<Language> ptr();
     /*
      * 获取指定字符串的ip
      */
@@ -29,20 +31,18 @@ public:
     void InitLanguage();
 
 private:
+    static std::shared_ptr<Language> _ptr;
+
     Language();
     // 重新加载语言
-    void reload();
-    /*
-     * 重新加载指定的语言
-     */
-    void reload(const std::string&);
+    void reload(const std::string& lang = "zh_CN");
     // 存取模块
     // WriteWithLine _writeLine;
-    nlohmann::json _json_ptr;
+    std::shared_ptr<nlohmann::json> _json_ptr;
     // 读取 json 文件
     ReadJson _read_json;
     // 是否以及被初始化过
     bool is_inited = false;
-    Log* log;
-    Setting*setting;
+    std::shared_ptr<Log> log;
+    std::shared_ptr<Setting> setting;
 };

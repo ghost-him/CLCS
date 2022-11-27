@@ -6,11 +6,11 @@ std::function<void()> Init::startInit = [](){
     system("figlet CLCS");
     auto file_manager = FileManager::ptr;
     // 添加默认的文件路径
-    file_manager->_dir_path["history"] = "history/";
-    file_manager->_dir_path["option"] = "option/";
-    file_manager->_dir_path["language_path"] = "option/language/";
-    file_manager->_dir_path["keys"] = "keys/";
-    file_manager->_dir_path["log"] = "log/";
+    file_manager()->_dir_path["history"] = "history/";
+    file_manager()->_dir_path["option"] = "option/";
+    file_manager()->_dir_path["language_path"] = "option/language/";
+    file_manager()->_dir_path["keys"] = "keys/";
+    file_manager()->_dir_path["log"] = "log/";
 
     /*
      * 查看文件夹是否存在
@@ -31,26 +31,26 @@ std::function<void()> Init::startInit = [](){
     struct tm time_struct;
     time_struct = *localtime(&time_now);
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &time_struct);
-    Log::ptr->setFilePath((std::string)"log/" + buf);
+    Log::ptr()->setFilePath((std::string)"log/" + buf);
 
     // 初始化设置系统
-    Setting::ptr->startInit();
+    Setting::ptr()->startInit();
 
 
     // TODO 初始化当前用户的uuid
     // TODO 设置当前的私钥
 
     // 初始化语言系统
-    Language::ptr->InitLanguage();
+    Language::ptr()->InitLanguage();
 
     // 初始化用户管理系统
-    User_Manager::ptr->Init_User_Manager();
+    User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
     ThreadPool::startInit();
 
     // 初始化连接器
-    Epoll_Reactor::getInstance()->Init_Epoll();
+    Epoll_Reactor::ptr()->Init_Epoll();
 };
 
 std::function<void()> Setting::first_time_run = [](){
@@ -99,7 +99,7 @@ std::function<void()> Setting::first_time_run = [](){
 
     // 初始化自己的密匙
     RSA_controller generator;
-    FileManager* f = FileManager::ptr;
+    auto f = FileManager::ptr();
     std::string pri_path = f->get("keys") + "self.pri";
     std::string pub_path = f->get("keys") + "self.pub";
     generator.set_private_key_path(pri_path);

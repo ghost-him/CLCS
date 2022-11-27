@@ -88,7 +88,7 @@ public:
      * 快速添加指定的内容
      */
     bool set_content(const std::string&, bool = true);
-    MessageGenerator& operator=(const char *);
+    // MessageGenerator& operator=(const char *);
     /*
      * 获取头标记
      */
@@ -96,7 +96,7 @@ public:
     /*
      * 获取文件的密文
      */
-    std::shared_ptr<unsigned char> get_content();
+    std::shared_ptr<unsigned char[]> get_content();
     /*
      * 获取密文的长度
      */
@@ -108,7 +108,10 @@ public:
 
 private:
     // 转好以后的长度
-    std::shared_ptr<unsigned char> _buf;
+    std::shared_ptr<unsigned char[]> _buf;
+    // 生成数据的长度
+    int _len;
+
     // 类型
     MessageHeader::Level _level;
     // 参数1, 2
@@ -116,18 +119,16 @@ private:
     MessageHeader::Option _para2;
     // 目标的用户
     std::string _target_user_uuid;
-    // 数据长度
-    int _len;
-    // 数据的内容
+    // 发送的数据的内容
     std::string _content;
 
-    Log* log = nullptr;
+    std::shared_ptr<Log> log = nullptr;
 
-    Language* lang = nullptr;
+    std::shared_ptr<Language> lang = nullptr;
 
-    Setting* setting = nullptr;
+    std::shared_ptr<Setting> setting = nullptr;
 
-    User_Manager* u_m = nullptr;
+    std::shared_ptr<User_Manager> u_m = nullptr;
 
     RSA_encrypt enc;
 
@@ -164,7 +165,7 @@ public:
     /*
      * 获取当前的文件内容
      */
-    std::shared_ptr<unsigned char> get_raw();
+    std::shared_ptr<unsigned char[]> get_raw();
     const std::string& get_content();
     /*
      * 获取消息的长度
@@ -195,11 +196,11 @@ private:
     // 消息长度
     int _message_size;
     // 消息内容
-    std::shared_ptr<unsigned char> _raw;
+    std::shared_ptr<unsigned char[]> _raw;
     // 消息解密以后的内容
     std::string _content;
     // 用户管理器
-    User_Manager* u_m;
+    std::shared_ptr<User_Manager> u_m;
 };
 
 
@@ -210,21 +211,32 @@ private:
 
 class MessageSender {
 public:
-    MessageSender();
+    /*
+     * 返回唯一的实例
+     */
+    static std::shared_ptr<MessageSender> ptr();
+
+    /*
+     * 初始化
+     */
     void startInit();
+    /*
+     * 设置要发送的文件描述符
+     */
     void set_fd(int);
     // 发送一个字符串
     void send_message(const std::string&);
-    void send_message(std::shared_ptr<unsigned char>, int);
+    void send_message(std::shared_ptr<unsigned char[]>, int);
 
 private:
-    static MessageSender* _pMessageSender;
+    static std::shared_ptr<MessageSender> _ptr;
+    MessageSender();
     // 目标服务器的文件描述符
     int _socket_fd;
-    MessageGenerator _generator;
-    Log* log ;
-    Language* lang;
-    User_Manager* u_m;
+    std::shared_ptr<Log> log ;
+    std::shared_ptr<Language> lang;
+    // 加解锁
+    std::mutex _sender;
 };
 
 /*
@@ -240,11 +252,11 @@ public:
     /*
      * 获取头文件
      */
-    const char * get_header();
+    const std::shared_ptr<char[]>& get_header();
     /*
      * 获取当前的内容
      */
-    std::shared_ptr<unsigned char> get_content();
+    std::shared_ptr<unsigned char[]> get_content();
     /*
      * 读取一行
      */
@@ -259,7 +271,7 @@ public:
     /*
      * 设置读文件, 并且设置读的长度
      */
-    void set_read_content(int len) {_is_content = true; _content_len = len;};
+    void set_read_content(int len);
     /*
      * 设置当前的fd
      */
@@ -271,12 +283,12 @@ public:
 
 private:
     // 读到的头文件
-    char header[BUFSIZ];
+    std::shared_ptr<char[]> _header;
     // 头文件的长度
-    int header_len;
+    int _header_len;
 
     // 受到的消息
-    std::shared_ptr<unsigned char> _buf;
+    std::shared_ptr<unsigned char[]> _buf;
     // 处理受到的消息
     MessageAnalysis _analysis;
     // 目标服务器
@@ -285,10 +297,12 @@ private:
     int _content_len;
     // 是否读内容
     bool _is_content;
+    // 是否重新开辟空间
+    bool _is_reset;
     // 日志系统
-    Log* log;
+    std::shared_ptr<Log> log;
     // 语言系统
-    Language* lang;
+    std::shared_ptr<Language> lang;
 
 };
 

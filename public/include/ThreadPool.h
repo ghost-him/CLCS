@@ -22,7 +22,7 @@ public:
     unsigned int _working_thread = 1;       // 正在工作的线程
     unsigned int _total_thread = 0;         // 总线程
 
-    pthread_t _daemon_thread;           // 守护线程的id
+    pthread_t _daemon_thread = 0;           // 守护线程的id
 
     int _check_per_time = 5;    // 每一次自检的间隔
 
@@ -50,7 +50,9 @@ public:
 
 class ThreadPool final {
 public:
-    static ThreadPool* ptr;
+    ~ThreadPool();
+
+    static std::shared_ptr<ThreadPool> ptr();
 
     static void startInit();
 
@@ -82,10 +84,12 @@ public:
     static unsigned int get_working_thread();   // 获取当前正在工作的线程的数量
 
 private:
+    static std::shared_ptr<ThreadPool> _ptr;
+
 
     static threadPool_t self;
     ThreadPool();
-    ~ThreadPool();
+
 
     // 普通线程做的任务
     static void* thread_work(void *);
@@ -106,9 +110,10 @@ private:
 
     static std::deque<Task> _task_deque;  // 任务队列,做一次的
     static std::set<pthread_t> _thread_id;
-    static Log* log;
-    static Setting &setting;
-    static Language* lang;
+
+    static std::shared_ptr<Log> log;
+    static std::shared_ptr<Setting> setting;
+    static std::shared_ptr<Language> lang;
 };
 
 

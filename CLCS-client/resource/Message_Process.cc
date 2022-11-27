@@ -1,14 +1,21 @@
 #include "Message_Process.h"
 
-Message_Process* Message_Process::ptr = new Message_Process;
+std::shared_ptr<Message_Process> Message_Process::_ptr(new Message_Process());
+
+std::shared_ptr<Message_Process> Message_Process::ptr() {
+    return _ptr;
+}
 
 void Message_Process::startInit() {
-    _sc = Server_Connector::ptr;
-    _ms.startInit();
-    _ms.set_fd(_sc->get_socketfd());
+    _sc = Server_Connector::ptr();
+    _ms = MessageSender::ptr();
+    _logger = Log::ptr();
+    _um = User_Manager::ptr();
+
+    _ms->startInit();
+    _ms->set_fd(_sc->get_socketfd());
     _mg.startInit();
-    _logger = Log::ptr;
-    _um = User_Manager::ptr;
+
     _logger->log("[info] Message_process: inited %c");
 }
 
@@ -58,7 +65,7 @@ void Message_Process::add_user(const std::string & uuid) {
 
 void Message_Process::update_connection() {
     _logger->log("[info] Message_process: update connection info %c");
-    _ms.set_fd(_sc->get_socketfd());
+    _ms->set_fd(_sc->get_socketfd());
 }
 
 void Message_Process::set_and_send(MessageHeader::Level level, MessageHeader::Option para1, MessageHeader::Option para2,
@@ -71,8 +78,8 @@ void Message_Process::set_and_send(MessageHeader::Level level, MessageHeader::Op
     _mg.set_content(message, is_encrypt);
 
     // 发送消息的头标记
-    _ms.send_message(_mg.get_header());
+    _ms->send_message(_mg.get_header());
     // 发送消息本体
-    _ms.send_message(_mg.get_content(), _mg.get_content_size());
+    _ms->send_message(_mg.get_content(), _mg.get_content_size());
     pthread_mutex_unlock(&_is_send_message);
 }

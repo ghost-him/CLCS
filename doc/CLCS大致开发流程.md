@@ -92,7 +92,28 @@
 
 ## V0.4.1
 
+**2022.11.24完成**
+
 1. 修复了服务器关闭时，客户端无法恢复到 正常的连接状态 的问题
 2. 修正了`security`模块 `获取密钥支持长度功能(size方法)` 错误的问题（导致无法收到别人发送的信息）
 3. 添加了大量的调试辅助代码
 4. 添加客户端断线重连的功能
+
+
+
+## V0.5.0
+
+1. 更改单例模式的实现方式，使得外部类无法直接获取变量
+2. 修改大部分指针为智能指针
+   1. `Command_Analysis`类
+   2. `CreateJson`类，`WriteJson`类，`ReadJson`类
+   3. `Language`类
+   4. `Log`类
+   5. `Message`一族
+   6. `Security`一族
+   7. `Setting`类
+   8. `ThreadPool`类
+   9. `User_Manager`类
+   10. `Business`,`Epoll_Reactor`,`Personalization`类等
+3. 修改了`Message_Process`类的实现细节，节省了内存的开销，提高了性能
+4. 修改了`MessageSender`的设计模式，改为了单例模式

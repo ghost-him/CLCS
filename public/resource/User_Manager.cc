@@ -1,9 +1,13 @@
 #include "User_Manager.h"
 
-User_Manager* User_Manager::ptr = new User_Manager;
+std::shared_ptr<User_Manager> User_Manager::_ptr(new User_Manager);
 User User_Manager::self;
 User User_Manager::server;
 const std::string User_Manager::empty_uuid = "00000000-0000-0000-0000-000000000000";
+
+std::shared_ptr<User_Manager> User_Manager::ptr() {
+    return _ptr;
+}
 
 // TODO 初始化user_manager
 void User_Manager::Init_User_Manager() {
@@ -11,9 +15,9 @@ void User_Manager::Init_User_Manager() {
      * 1. 初始化自身的user
      * 2. 初始化维护的用户组
      */
-    setting = Setting::ptr;
-    log = Log::ptr;
-    fm = FileManager::ptr;
+    setting = Setting::ptr();
+    log = Log::ptr();
+    fm = FileManager::ptr();
     self.set_pub_path((*setting)["pub_key_path"]);
     self.set_pri_path((*setting)["pri_key_path"]);
     self.set_uuid((*setting)["uuid"]);

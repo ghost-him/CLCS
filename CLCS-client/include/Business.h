@@ -106,16 +106,16 @@ public:
     // 是否是第一次运行
     static bool is_start;
 
-    static Log* log;
-    static Language* lang;
-    static Setting* setting;
-    static User_Manager* u_m;
+    static std::shared_ptr<Log> log;
+    static std::shared_ptr<Language> lang;
+    static std::shared_ptr<Setting> setting;
+    static std::shared_ptr<User_Manager> u_m;
 
     static MessageReceiver mr;
     static MessageAnalysis ma;
 
-    static Message_Process* m_process;
+    static std::shared_ptr<Message_Process> m_process;
 
-    static Server_Connector* s_c;
+    static std::shared_ptr<Server_Connector> s_c;
 
 };

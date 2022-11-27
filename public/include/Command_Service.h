@@ -3,6 +3,7 @@
  */
 
 /*
+ * 执行 cat user 命令
  * store["cat"]["user"]();
  */
 
@@ -11,7 +12,7 @@
 
 class Service {
 public:
-    Service() = default;
+    Service(){}
     Service operator=(Service&);
 
     // 运行当前的函数

@@ -6,7 +6,10 @@
 
 class Command_Analysis {
 public:
-    static Command_Analysis* ptr;
+    /*
+     * 获取唯一的实例
+     */
+    static std::shared_ptr<Command_Analysis> ptr();
 
     /*
      * 初始化分析系统
@@ -19,17 +22,17 @@ public:
     /*
      * 设置要执行的服务
      */
-    void set_service(Command_Service*);
+    void set_service(const std::shared_ptr<Command_Service> &);
 
 
 private:
     Command_Analysis(){};
 
-    // 指针，用于单例模式
-
-
     // 服务指针
-    Command_Service* _service;
+    std::shared_ptr<Command_Service> _service;
 
-    Log* log;
+    // 当前的指针
+    static std::shared_ptr<Command_Analysis> _ptr;
+
+    std::shared_ptr<Log> _log;
 };

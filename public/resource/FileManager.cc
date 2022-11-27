@@ -27,7 +27,7 @@ void ReadJson::read_json() {
     ifs.close();
 }
 
-void ReadJson::set_json_ptr(nlohmann::json* json) {
+void ReadJson::set_json_ptr(const std::shared_ptr<nlohmann::json>& json) {
     _json = json;
 }
 
@@ -74,14 +74,14 @@ bool WriteFile::is_error() const {
     return _is_exist_error;
 }
 
-void WriteJson::set_json_to_write(nlohmann::json *json_ptr) {
+void WriteJson::set_json_to_write(const std::shared_ptr<nlohmann::json>& json_ptr) {
     _json_ptr = json_ptr;
 }
 
 void WriteJson::write_json() {
     std::ofstream ofs;
     if (_file_path.empty()) {
-        Log::ptr->log("[warn] invalid path: " + _file_path);
+        Log::ptr()->log("[warn] invalid path: " + _file_path);
         return ;
     }
 
@@ -90,14 +90,14 @@ void WriteJson::write_json() {
     if (ofs.is_open()) {
         ofs << (*_json_ptr).dump(4);
     } else {
-        Log::ptr->log("[warn] can not open the target path: " + _file_path);
+        Log::ptr()->log("[warn] can not open the target path: " + _file_path);
     }
 
     ofs.close();
 }
 
 bool WriteUser::write_file(std::map<std::string, User> & user_store) {
-    auto log = Log::ptr;
+    auto log = Log::ptr();
     std::ofstream ofs;
     ofs.open(_file_path, std::ios::out | std::ios::trunc);
     if (!ofs.is_open()) {
@@ -138,28 +138,32 @@ void CreateJson::create_target() {
 
     // 检查文件是否已经打开了
     if (ofs.is_open()) {
-        ofs << _json;
+        ofs << (*_json);
     } else {
-        Log::ptr->log("[error] createJson: invalid path:" + _file_path);
+        Log::ptr()->log("[error] createJson: invalid path:" + _file_path);
     }
     // 关闭文件
     ofs.close();
 }
 
-void CreateJson::set_json(const nlohmann::json &json) {
+void CreateJson::set_json(const std::shared_ptr<nlohmann::json>& json) {
     _json = json;
 }
 
-FileManager* FileManager::ptr = new FileManager;
+std::shared_ptr<FileManager> FileManager::_ptr(new FileManager);
 
 FileManager::FileManager() {
     // 设置默认值
     _dir_path["default_path"] = "";
 }
 
+std::shared_ptr<FileManager> FileManager::ptr() {
+    return _ptr;
+}
+
 std::string& FileManager::get(const std::string& dir_path) {
     if (_dir_path.count(dir_path) == 0) {
-        Log::ptr->log("[warn] %c target file not exist: " + dir_path);
+        Log::ptr()->log("[warn] %c target file not exist: " + dir_path);
         return _dir_path["default_path"];
     }
     return _dir_path[dir_path];

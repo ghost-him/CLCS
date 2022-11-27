@@ -11,7 +11,7 @@
 
 class Message_Process {
 public:
-    static Message_Process* ptr;
+    static std::shared_ptr<Message_Process> ptr();
     void startInit();
     /*
      * 测试延迟
@@ -36,16 +36,19 @@ public:
 
     void update_connection();
 private:
+    Message_Process(){}
+    static std::shared_ptr<Message_Process> _ptr;
+
     void set_and_send(MessageHeader::Level level, MessageHeader::Option para1, MessageHeader::Option para2,
                       const std::string& uuid,
                       const std::string& message,
                       bool is_encrypt);
 
     MessageGenerator _mg;
-    MessageSender _ms;
-    Server_Connector* _sc;
-    Log* _logger;
-    User_Manager* _um;
+    std::shared_ptr<MessageSender> _ms;
+    std::shared_ptr<Server_Connector> _sc;
+    std::shared_ptr<Log> _logger;
+    std::shared_ptr<User_Manager> _um;
 
     pthread_mutex_t _is_send_message = PTHREAD_MUTEX_INITIALIZER;
 };

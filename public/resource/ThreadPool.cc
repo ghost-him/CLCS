@@ -1,36 +1,36 @@
 #include "ThreadPool.h"
 
 // 初始化静态变量
-ThreadPool* ThreadPool::ptr = new ThreadPool();
+std::shared_ptr<ThreadPool> ThreadPool::_ptr(new ThreadPool());
 threadPool_t ThreadPool::self;
 std::deque<Task> ThreadPool::_task_deque;
 std::set<pthread_t> ThreadPool::_thread_id;
-Log* ThreadPool::log;
-Setting &ThreadPool::setting = *Setting::ptr;
-Language* ThreadPool::lang;
+std::shared_ptr<Log> ThreadPool::log = nullptr;
+std::shared_ptr<Setting> ThreadPool::setting = nullptr;
+std::shared_ptr<Language> ThreadPool::lang = nullptr;
 
 void ThreadPool::set_max_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._max_number = num;
-    setting["threadpool_max_thread"] = std::to_string(num);
+    (*setting)["threadpool_max_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
 void ThreadPool::set_min_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._min_number = num;
-    setting["threadpool_min_thread"] = std::to_string(num);
+    (*setting)["threadpool_min_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
 void ThreadPool::set_grow_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._grow_number = num;
-    setting["threadpool_grow_thread"] = std::to_string(num);
+    (*setting)["threadpool_grow_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
 void ThreadPool::set_check_time(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._check_per_time = num;
-    setting["threadpool_set_check_time"] = std::to_string(num);
+    (*setting)["threadpool_set_check_time"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
 
@@ -55,16 +55,22 @@ ThreadPool::ThreadPool() {
 
 }
 
+std::shared_ptr<ThreadPool> ThreadPool::ptr() {
+    return _ptr;
+}
+
 void ThreadPool::startInit() {
-    log = Log::ptr;
-    lang = Language::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
+    setting = Setting::ptr();
+
     log->log((*lang)["threadPool_start_init"]);
-    self._max_number = std::stoi(setting["threadpool_max_thread"]);
-    self._min_number = std::stoi(setting["threadpool_min_thread"]);
-    self._grow_number = std::stoi(setting["threadpool_grow_thread"]);
+    self._max_number = std::stoi((*setting)["threadpool_max_thread"]);
+    self._min_number = std::stoi((*setting)["threadpool_min_thread"]);
+    self._grow_number = std::stoi((*setting)["threadpool_grow_thread"]);
     self._working_thread = 0;
     self._total_thread = 0;
-    self._check_per_time = std::stoi(setting["threadpool_set_check_time"]);
+    self._check_per_time = std::stoi((*setting)["threadpool_set_check_time"]);
 }
 
 void ThreadPool::startThreadPool() {

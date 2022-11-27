@@ -1,8 +1,8 @@
 #include "Security.h"
 
 RSA_controller::RSA_controller() {
-    log = Log::ptr;
-    lang = Language::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
 }
 
 RSA_controller::~RSA_controller() {
@@ -57,20 +57,25 @@ bool RSA_controller::generate_keys(int len) {
     f_pub = nullptr;
     // 释放内存
     EVP_PKEY_free(pkey);
+    pkey = nullptr;
     return is_success;
 }
 
 
 
 RSA_Security::RSA_Security() {
-
+    _pkey = EVP_PKEY_new();
 }
 
+
+RSA_Security::~RSA_Security() {
+    EVP_PKEY_free(_pkey);
+}
+
+
 void RSA_Security::startInit() {
-    _pkey = EVP_PKEY_new();
-    log = Log::ptr;
-    lang = Language::ptr;
-    log->log("[info] RSA_Security init end");
+    log = Log::ptr();
+    lang = Language::ptr();
 }
 
 void RSA_Security::init() {
@@ -78,18 +83,21 @@ void RSA_Security::init() {
     _pkey = EVP_PKEY_new();
 }
 
-RSA_Security::~RSA_Security() {
-    EVP_PKEY_free(_pkey);
-}
-
 bool RSA_Security::set_and_read_key(const std::string & str) {
     log->log("RSA_security set key path: " + str + " and read key");
     return set_key_path(str) && read_key();
 }
 
-RSA_encrypt::~RSA_encrypt() {
-
+RSA_encrypt::RSA_encrypt() {
+    _output_text = std::make_shared<unsigned char[]>(BUFSIZ);
 }
+
+void RSA_encrypt::startInit() {
+    // 装饰器模式
+    RSA_Security::startInit();
+    log->log("[info] RSA_encrypt start init");
+}
+
 
 bool RSA_encrypt::read_key() {
     FILE * key_path = fopen(_key_path.c_str(), "r");
@@ -127,13 +135,12 @@ bool RSA_encrypt::convert() {
 #ifdef IS_DEBUG
     std::cerr << "rsa_encrypt start convert" << std::endl;
 #endif
-    memset(_output_text, 0, sizeof _output_text);
+
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(_pkey, nullptr);
     EVP_PKEY_encrypt_init(ctx);
 
-    _output_len = EVP_PKEY_get_size(_pkey);
 
-    if (!EVP_PKEY_encrypt(ctx, _output_text, &_output_len, reinterpret_cast<const unsigned char *>(_input_text), (size_t)strlen(_input_text))){
+    if (!EVP_PKEY_encrypt(ctx, _output_text.get(), &_output_len, reinterpret_cast<const unsigned char *>(_input_text.get()), _input_len)){
         log->log((*lang)["RSA_encrypt_convert_error"] + ERR_reason_error_string(ERR_get_error()));
         error = ERR_reason_error_string(ERR_get_error());
         return false;
@@ -146,24 +153,36 @@ size_t RSA_encrypt::size() {
 }
 
 void RSA_encrypt::set_input(const std::string& str) {
-    set_input(str.c_str());
+    // 创建一个指定大小的空间
+    auto temp = std::make_shared<char[]>(str.size());
+    // 复制空间的内容
+    memcpy(temp.get(), str.c_str(), str.size());
+    set_input(temp, str.size());
 }
 
-void RSA_encrypt::set_input(const char * str) {
-    strcpy(_input_text, str);
+void RSA_encrypt::set_input(std::shared_ptr<char[]>& str, size_t len) {
+    _input_text = str;
+    _input_len = len;
 }
 
-const unsigned char * RSA_encrypt::get_output() {
+std::shared_ptr<unsigned char[]> RSA_encrypt::get_output() {
     return _output_text;
 }
 
-
-RSA_decrypt::~RSA_decrypt() {
-
+RSA_decrypt::RSA_decrypt() {
+    _input_text = std::make_shared<unsigned char[]>(BUFSIZ);
+    _output_text = std::make_shared<char[]>(BUFSIZ);
 }
+
+void RSA_decrypt::startInit() {
+    // 装饰器模式
+    RSA_Security::startInit();
+    log->log("[info] RSA_decrypt start init");
+}
+
 /*
-     * 读取私钥
-     */
+ * 读取私钥
+ */
 bool RSA_decrypt::read_key() {
     FILE * key_path = fopen(_key_path.c_str(), "r");
     if (key_path == nullptr) {
@@ -202,18 +221,19 @@ bool RSA_decrypt::convert() {
 #ifdef IS_DEBUG
     std::cerr << "rsa_decrypt start convert" << std::endl;
 #endif
-    // 清空上一次的信息
-    memset(_output_text, '\0', sizeof _output_text);
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(_pkey, nullptr);
     EVP_PKEY_decrypt_init(ctx);
 
-    _output_len = EVP_PKEY_get_size(_pkey);
+    _output_len = BUFSIZ;
     // 转换信息
-    if (!EVP_PKEY_decrypt(ctx, reinterpret_cast<unsigned char *>(_output_text), &_output_len, _input_text, _output_len)){
+    if (!EVP_PKEY_decrypt(ctx, reinterpret_cast<unsigned char *>(_output_text.get()), &_output_len, _input_text.get(), _input_len)){
         log->log((*lang)["RSA_decrypt_convert_error"] + ERR_reason_error_string(ERR_get_error()));
         error = ERR_reason_error_string(ERR_get_error());
         return false;
     }
+    // 在末尾打上结束, 以防止上一次的结果对这次的结果产生影响
+    _output_text[_output_len] = '\0';
+
     return true;
 }
 
@@ -222,11 +242,17 @@ size_t RSA_decrypt::size() {
 }
 
 
-void RSA_decrypt::set_input(const unsigned char * str, size_t len) {
-    memcpy(_input_text, str, len);
+void RSA_decrypt::set_input(const unsigned char* str, size_t len) {
+    memcpy(_input_text.get(), str, len);
+    _input_len = len;
 }
 
-const char * RSA_decrypt::get_output() {
+void RSA_decrypt::set_input(std::shared_ptr<unsigned char[]>& str, size_t len) {
+    _input_text = str;
+    _input_len = len;
+}
+
+std::shared_ptr<char[]> RSA_decrypt::get_output() {
     return _output_text;
 }
 

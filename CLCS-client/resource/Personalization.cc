@@ -5,106 +5,106 @@
  * 用于设置服务端和客户端的不同之处的函数
  */
 
-Command_Service command_service;
+std::shared_ptr<Command_Service> command_service = std::make_shared<Command_Service>();
 void add_command() {
-    command_service.alert = [](){
+    command_service->alert = [](){
         std::cout << "无效的指令格式或参数！！！输入help来查看当前支持的参数" << "\n";
     };
 
-    command_service.set("help", "输出此条信息") = [](const std::vector<std::string>& param){
-        command_service.help();
+    command_service->set("help", "输出此条信息") = [](const std::vector<std::string>& param){
+        command_service->help();
     };
 
-    command_service.set("reset_target", "重新设置目标服务器的ip和地址") = [](const std::vector<std::string>& param){
+    command_service->set("reset_target", "重新设置目标服务器的ip和地址") = [](const std::vector<std::string>& param){
         if (param.size() == 1) {
             Business::reset_target_ip_port();
         } else {
             if (param.size() != 3) {
-                command_service.alert();
-                command_service.help();
+                command_service->alert();
+                command_service->help();
                 return ;
             }
             Business::reset_target_ip_port(param[1], std::stoi(param[2]));
         }
     };
 
-    command_service.set("re_connect", "重新连接目标服务器") = [](const std::vector<std::string>& param){
+    command_service->set("re_connect", "重新连接目标服务器") = [](const std::vector<std::string>& param){
         Business::re_connect_server();
     };
 
-    command_service.set_group_param("cat");
-    command_service.set("cat", "查看信息");
-    command_service.get("cat")->set_format("cat [参数]");
-    command_service.get("cat")->set("connect", "与服务器的连接状态") = [](const std::vector<std::string>& param){
+    command_service->set_group_param("cat");
+    command_service->set("cat", "查看信息");
+    command_service->get("cat")->set_format("cat [参数]");
+    command_service->get("cat")->set("connect", "与服务器的连接状态") = [](const std::vector<std::string>& param){
         Business::cat_connect_status();
     };
 
-    command_service.get("cat")->set("uuid", "自己的uuid") = [](const std::vector<std::string>& param){
+    command_service->get("cat")->set("uuid", "自己的uuid") = [](const std::vector<std::string>& param){
         Business::cat_uuid();
     };
 
-    command_service.get("cat")->set("user", "当前已经保存的用户") = [](const std::vector<std::string>& param){
+    command_service->get("cat")->set("user", "当前已经保存的用户") = [](const std::vector<std::string>& param){
         Business::cat_user();
     };
 
-    command_service.get("cat")->set("latency" ,"与服务器的延迟") = [](const std::vector<std::string>& param){
+    command_service->get("cat")->set("latency" ,"与服务器的延迟") = [](const std::vector<std::string>& param){
         Business::Testing_network_latency();
     };
 
-    command_service.get("cat")->set("time", "当前系统的时间") = [](const std::vector<std::string>& param){
+    command_service->get("cat")->set("time", "当前系统的时间") = [](const std::vector<std::string>& param){
         auto a = time(nullptr);
         std::cout << ctime(&a) << std::endl;
     };
 
-    command_service.set("recall", "向服务器发送回调消息") = [](const std::vector<std::string>& param){
+    command_service->set("recall", "向服务器发送回调消息") = [](const std::vector<std::string>& param){
         if (param.size() != 2) {
-            command_service.alert();
-            command_service.help();
+            command_service->alert();
+            command_service->help();
             return ;
         }
         Business::recall_request(param[1]);
     };
-    command_service.get("recall")->set_format("recall [消息]");
+    command_service->get("recall")->set_format("recall [消息]");
 
-    command_service.set("rename", "更改用户的昵称") = [](const std::vector<std::string>& param){
+    command_service->set("rename", "更改用户的昵称") = [](const std::vector<std::string>& param){
         if (param.size() != 3) {
-            command_service.alert();
-            command_service.help();
+            command_service->alert();
+            command_service->help();
             return ;
         }
         Business::rename(param[1], param[2]);
     };
-    command_service.get("rename")->set_format("rename [uuid/旧昵称] [新昵称]");
+    command_service->get("rename")->set_format("rename [uuid/旧昵称] [新昵称]");
 
-    command_service.set("send", "向用户发送消息") = [](const std::vector<std::string>& param){
+    command_service->set("send", "向用户发送消息") = [](const std::vector<std::string>& param){
         if (param.size() != 3) {
-            command_service.alert();
-            command_service.help();
+            command_service->alert();
+            command_service->help();
             return ;
         }
 
         Business::send_message(param[1], param[2]);
     };
-    command_service.get("send")->set_format("send [uuid/昵称] [消息]");
+    command_service->get("send")->set_format("send [uuid/昵称] [消息]");
 
-    command_service.set("add", "添加指定的用户") = [](const std::vector<std::string>& param){
+    command_service->set("add", "添加指定的用户") = [](const std::vector<std::string>& param){
         if (param.size() != 2) {
-            command_service.alert();
-            command_service.help();
+            command_service->alert();
+            command_service->help();
             return ;
         }
         Business::add_user(param[1]);
     };
-    command_service.get("add")->set_format("add [uuid]");
+    command_service->get("add")->set_format("add [uuid]");
 
-    command_service.set("save", "保存设置") = [](const std::vector<std::string>& param){
+    command_service->set("save", "保存设置") = [](const std::vector<std::string>& param){
         Business::save();
     };
 }
 
 std::function<void()> Init::startInit = [](){
     system("figlet CLCS");
-    auto file_manager = FileManager::ptr;
+    auto file_manager = FileManager::ptr();
     // 添加默认的文件路径
     file_manager->_dir_path["history"] = "history/";
     file_manager->_dir_path["option"] = "option/";
@@ -131,39 +131,40 @@ std::function<void()> Init::startInit = [](){
     struct tm time_struct;
     time_struct = *localtime(&time_now);
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &time_struct);
-    Log::ptr->setFilePath((std::string)"log/" + buf);
+    Log::ptr()->setFilePath((std::string)"log/" + buf);
 
     // 初始化设置系统
-    Setting::ptr->startInit();
+    Setting::ptr()->startInit();
 
 
     // TODO 初始化当前用户的uuid
     // TODO 设置当前的私钥
 
     // 初始化语言系统
-    Language::ptr->InitLanguage();
+    Language::ptr()->InitLanguage();
 
     // 初始化用户管理系统
-    User_Manager::ptr->Init_User_Manager();
+    User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
     ThreadPool::startInit();
 
     // 初始化服务器连接器
-    Server_Connector::ptr->startInit();
-
-    // 初始化命令分析器
-    Command_Analysis::ptr->Init_Analysis_System();
-    Command_Analysis::ptr->set_service(&command_service);
+    Server_Connector::ptr()->startInit();
 
     // 初始化业务系统
     Business::startInit();
 
     // 初始化连接器
-    Message_Process::ptr->startInit();
+    Message_Process::ptr()->startInit();
 
     // 添加命令
     add_command();
+
+    // 初始化命令分析器
+    Command_Analysis::ptr()->Init_Analysis_System();
+    Command_Analysis::ptr()->set_service(command_service);
+
 };
 
 std::function<void()> Setting::first_time_run = [](){
@@ -205,7 +206,7 @@ std::function<void()> Setting::first_time_run = [](){
 
     // 初始化自己的密匙
     RSA_controller generator;
-    FileManager *f = FileManager::ptr;
+    auto f = FileManager::ptr();
     std::string pri_path = f->get("keys") + "self.pri";
     std::string pub_path = f->get("keys") + "self.pub";
     generator.set_private_key_path(pri_path);

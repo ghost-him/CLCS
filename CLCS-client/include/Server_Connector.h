@@ -20,7 +20,7 @@
 
 class Server_Connector {
 public:
-    static Server_Connector* ptr;
+    static std::shared_ptr<Server_Connector> ptr();
     /*
      * 初始化连接器
      */
@@ -48,6 +48,7 @@ public:
 
     void wait_for_connection();
 private:
+    static std::shared_ptr<Server_Connector> _ptr;
     Server_Connector();
     // 目标连接的ip和端口
     std::string _ip;
@@ -63,10 +64,10 @@ private:
     sockaddr_in _serv_addr;
 
     // 日志系统
-    Log* log;
+    std::shared_ptr<Log> log;
     // 设置系统
-    Setting* setting;
+    std::shared_ptr<Setting> setting;
     // 语言系统
-    Language* lang;
+    std::shared_ptr<Language> lang;
 
 };

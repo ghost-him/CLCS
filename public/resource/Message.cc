@@ -1,16 +1,17 @@
 #include "Message.h"
 
-MessageSender* MessageSender::_pMessageSender = new MessageSender;
+std::shared_ptr<MessageSender> MessageSender::_ptr(new MessageSender);
 
 MessageGenerator::MessageGenerator()
     :_level(MessageHeader::RECALL), _para1(MessageHeader::NOMEAN), _para2(MessageHeader::NOMEAN){
+    _len = 0;
 }
 
 void MessageGenerator::startInit() {
-    log = Log::ptr;
-    lang = Language::ptr;
-    setting = Setting::ptr;
-    u_m = User_Manager::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
+    setting = Setting::ptr();
+    u_m = User_Manager::ptr();
     enc.startInit();
 }
 
@@ -77,16 +78,18 @@ bool MessageGenerator::set_content(const std::string& str, bool is_encrypt) {
         int unit = enc.size();
         int str_len = unit - 11;
         int num = str.size() / str_len + 1;
-        _len = num * unit;
+
+        // 设置目标消息数据的长度， 并在合适的时候变动数组的长度
+        set_content_len(num * unit);
         _content = str;
         // 开辟一个指定的空间的大小
-        _buf.reset(new unsigned char[_len + 1]);
+
         for (int index = 0; index < num; index ++) {
             // 转换一部分字符串的片段
             enc.set_input(str.substr(str_len * index, str_len));
             enc.convert();
             // 将当前的片段输出到指定的位置
-            memcpy(_buf.get() + index * unit, enc.get_output(), unit);
+            memcpy(_buf.get() + index * unit, enc.get_output().get(), unit);
             _buf.get()[index * unit + unit] = '\0';
         }
     } else {
@@ -100,18 +103,20 @@ bool MessageGenerator::set_content(const std::string& str, bool is_encrypt) {
 
 // TODO 重写该函数
 // 读入消息， 然后计算加密以后的消息的长度
+/*
 MessageGenerator& MessageGenerator::operator = (const char * chars) {
     std::string str = chars;
     set_content(str);
     return *this;
 }
+ */
 
 MessageAnalysis::MessageAnalysis() {
     _message_size = 0;
 }
 
 void MessageAnalysis::startInit() {
-    u_m = User_Manager::ptr;
+    u_m = User_Manager::ptr();
     // 设置解密的钥匙
     dec.startInit();
     dec.set_and_read_key(u_m->get_self_pri_path());
@@ -158,7 +163,7 @@ std::string MessageGenerator::get_header() {
     return res;
 }
 
-std::shared_ptr<unsigned char> MessageGenerator::get_content() {
+std::shared_ptr<unsigned char[]> MessageGenerator::get_content() {
     return _buf;
 }
 
@@ -167,6 +172,9 @@ int MessageGenerator::get_content_size() {
 }
 
 void MessageGenerator::set_content_len(int len) {
+    if (_len < len) {
+        _buf = std::make_shared<unsigned char[]>(len);
+    }
     _len = len;
 }
 
@@ -189,7 +197,7 @@ const std::string& MessageAnalysis::get_uuid2() const {
     return _uuid2;
 }
 
-std::shared_ptr<unsigned char> MessageAnalysis::get_raw() {
+std::shared_ptr<unsigned char[]> MessageAnalysis::get_raw() {
     return _raw;
 }
 
@@ -217,9 +225,6 @@ const std::string& MessageAnalysis::get_content() {
     std::cerr << "message analysis dec size:" << dec.size() << std::endl;
 #endif
 
-
-    // 定义一个缓存区
-    unsigned char buf[BUFSIZ];
     size_t len = _message_size;
     size_t read_len;
     // 当前的字节块
@@ -232,10 +237,8 @@ const std::string& MessageAnalysis::get_content() {
             break;
         // 每次减读到的长度
         len = std::max(len - dec.size(), (size_t)0);
-        // 读取中间一段的字节块
-        memcpy(buf, _raw.get() + block * read_len, read_len);
         // 解码当前的字节块
-        dec.set_input(buf, read_len);
+        dec.set_input(_raw.get() + block * read_len, read_len);
         // 转换失败
         if (!dec.convert()) {
             _content.clear();
@@ -248,7 +251,7 @@ const std::string& MessageAnalysis::get_content() {
         std::cerr << "rsa_decrypt end convert" << std::endl;
 #endif
         // 将转换好的字节块添加到文字后面
-        _content += dec.get_output();
+        _content += dec.get_output().get();
         // 读取下一个字节块
         block ++;
     }
@@ -268,14 +271,14 @@ int MessageAnalysis::get_command(MessageReceiver* mr) {
     int ret;
     if ((ret = mr->read_header(), ret) <= 0)
         return ret;
-    const char * head = mr->get_header();
+    auto head = mr->get_header();
 
     // 检查头信息
-    if (!check_header(head)) {
+    if (!check_header(head.get())) {
         return false;
     }
 
-    std::stringstream ss(head);
+    std::stringstream ss(head.get());
     // 读取头信息的各个信息
     if (ss.eof())
         return false;
@@ -334,13 +337,13 @@ bool MessageAnalysis::check_header(const char * header) {
     return true;
 }
 
-
+std::shared_ptr<MessageSender> MessageSender::ptr() {
+    return _ptr;
+}
 
 void MessageSender::startInit() {
-    _socket_fd = 0;
-    log = Log::ptr;
-    lang = Language::ptr;
-    _generator.startInit();
+    log = Log::ptr();
+    lang = Language::ptr();
 }
 
 void MessageSender::set_fd(int target) {
@@ -348,53 +351,65 @@ void MessageSender::set_fd(int target) {
 }
 
 void MessageSender::send_message(const std::string & str) {
+    _sender.lock();
+    log->log("[info] message sender start send message");
+
     // 只负责发送消息
     ssize_t ret = write(_socket_fd, str.c_str(), str.size());
+
+    _sender.unlock();
+    log->log("[info] message sender end send message");
+    // 判断返回值
     if (ret == -1) {
         log->log((*lang)["MessageSender_send_str_error"]);
     }
+
 }
 
-void MessageSender::send_message(std::shared_ptr<unsigned char> str, int len) {
+void MessageSender::send_message(std::shared_ptr<unsigned char[]> str, int len) {
+    _sender.lock();
+    log->log("[info] message sender start send message");
+
     // 发送加密的消息
     ssize_t ret = write(_socket_fd, str.get(), len);
+
+    _sender.unlock();
+    log->log("[info] message sender end send message");
+    // 判断返回值
     if (ret == -1) {
         log->log((*lang)["MessageSender_send_ptr_error"]);
     }
 }
 
 MessageSender::MessageSender() {
-    log = Log::ptr;
-    lang = Language::ptr;
+    _socket_fd = 0;
 }
 
 void MessageReceiver::startInit() {
-    _socket_fd = 0;
-    log = Log::ptr;
-    lang = Language::ptr;
-    _socket_fd = 0;
+    log = Log::ptr();
+    lang = Language::ptr();
 }
 
-const char* MessageReceiver::get_header() {
-    return header;
+const std::shared_ptr<char[]>& MessageReceiver::get_header() {
+    return _header;
 }
 
-std::shared_ptr<unsigned char> MessageReceiver::get_content() {
+std::shared_ptr<unsigned char[]> MessageReceiver::get_content() {
     return _buf;
 }
 
 int MessageReceiver::read_header() {
 #ifdef IS_DEBUG
-    std::cerr << "try to read header" << std::endl;
+    std::cerr << "try to read _header" << std::endl;
 #endif
 
     int total_len = -1;
     // 读取头标记，头标记以\n结尾
     do {
         total_len ++;
-        auto ret = read(_socket_fd, header + total_len, 1);
+        auto ret = read(_socket_fd, _header.get() + total_len, 1);
         if (ret < 0) {
-            log->log((std::string)"[error] MessageReceiver: read header error: %e, last time read:" + header);
+            log->log((std::string)"[error] MessageReceiver: read _header error: %e, last time read:" + _header.get());
             return -1;
         } else if (ret == 0) {
             log->log((*lang)["MessageReceiver_close_connect"]);
@@ -402,14 +417,15 @@ int MessageReceiver::read_header() {
             return 0;
         }
 
-    }while (total_len < 100 && *(header + total_len) != '\n');
+    }while (total_len < 100 && *(_header.get() + total_len) != '\n');
     // 设置读到的长度
-    header_len = total_len + 1; // total_len的长度是消息的长度， 不包含最后的\n
+    _header_len = total_len + 1; // total_len的长度是消息的长度， 不包含最后的\n
 #ifdef IS_DEBUG
-    std::cerr << "message receiver receive header: " << header << std::endl;
+    std::cerr << "message receiver receive _header: " << _header << std::endl;
 #endif
-
-    return header_len;
+    // 标记结尾，防止上一次的结果对这次的有影响
+    _header[_header_len] = '\0';
+    return _header_len;
 }
 
 int MessageReceiver::read_content() {
@@ -421,15 +437,20 @@ int MessageReceiver::read_content() {
     // 读取完内容以后就该读取头标记了
     _is_content = false;
 
-    _buf.reset(new unsigned char [_content_len]);
+    // 当需要重新设置大小的时候才会设置大小
+    if (_is_reset)
+        _buf = std::make_shared<unsigned char[]>(_content_len);
 
+    // 函数的返回值
     int ret;
     // 读取指定长度的内容
     ret = read(_socket_fd, _buf.get(), _content_len);
     if (ret < 0) {
+        // 读取失败
         log->log((*lang)["MessageReceiver_read_error"]);
         return -1;
     } else if (ret == 0) {
+        // 连接关闭
         log->log("target user close the connect");
         return 0;
     }
@@ -437,7 +458,20 @@ int MessageReceiver::read_content() {
 #ifdef IS_DEBUG
     std::cerr << "message receiver receive content: " << _buf << std::endl;
 #endif
+    // 返回返回值
     return ret;
+}
+
+void MessageReceiver::set_read_content(int len) {
+    // 设置要读的内容
+    _is_content = true;
+    // 如果当前的大小比输入的大时，则无需重新设置大小
+    if (len > _content_len)
+        _is_reset = true;
+    else
+        _is_reset = false;
+
+    _content_len = len;
 }
 
 void MessageReceiver::set_fd(int fd) {
@@ -449,6 +483,11 @@ int MessageReceiver::get_fd() const {
 }
 
 MessageReceiver::MessageReceiver() {
-
+    _header = std::make_shared<char[]>(BUFSIZ);
+    _header_len = 0;
+    _socket_fd = 0;
+    _content_len = 0;
+    _is_content = false;
+    _is_reset = true;
 }
 

@@ -662,7 +662,7 @@ TEXT_SYS ADD_USER NOMEAN
 
 ### `ReadFile`类
 
-作用：读文件的父类， 当前是`ReadWithLine`, `ReadUser`的父类
+作用：读文件的父类， 当前是`ReadJson`, `ReadUser`的父类
 
 * 设置文件路径
 * 获取文件路径
@@ -670,11 +670,18 @@ TEXT_SYS ADD_USER NOMEAN
 
 ### `WriteFile` 类
 
-作用：写文件的父类，当前是`WriteWithLine`， `WriteUser`的父类
+作用：写文件的父类，当前是`WriteJson`， `WriteUser`的父类
 
 * 设置文件路径
 * 获取当前文件路径
 * 查看是否存在错误
+
+### `CreateFile`类
+
+作用：创建文件的父类，当前是`CreateJson`类的父类
+
+* 设置目标的路径
+* 创建文件
 
 ---
 
@@ -699,8 +706,6 @@ TEXT_SYS ADD_USER NOMEAN
 * 读取用户信息
 * 设置文件路径
 
-
-
 ### `WriteUser`类
 
 将用户输入写入到指定的文件中
@@ -708,7 +713,11 @@ TEXT_SYS ADD_USER NOMEAN
 * 写入文件
 * 设置文件路径
 
+### `Createjson`类
 
+作用：创建`json`文件
+
+* 设置要创建的文件
 
 ### `MessageGenerator`类
 
@@ -851,8 +860,8 @@ int _events = 0;         	// 当前事件的状态
 std::function<void()> _func;// 回调函数
 time_t _last_active = 0;    // 上一次运行的事件（暂未使用）
 
-char header[BUFSIZ];			// 存放头标记
-int header_len = 0;				// 头标记的长度
+char _header[BUFSIZ];			// 存放头标记
+int _header_len = 0;				// 头标记的长度
 
 // 解析头标记以后的内容
 char level;

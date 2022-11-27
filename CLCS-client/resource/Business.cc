@@ -1,24 +1,24 @@
 #include "Business.h"
 
-Log *Business::log = nullptr;
-Language *Business::lang = nullptr;
-Setting *Business::setting = nullptr;
-User_Manager *Business::u_m = nullptr;
+std::shared_ptr<Log> Business::log = nullptr;
+std::shared_ptr<Language> Business::lang = nullptr;
+std::shared_ptr<Setting> Business::setting = nullptr;
+std::shared_ptr<User_Manager> Business::u_m = nullptr;
 bool Business::is_start = true;
 
 MessageReceiver Business::mr;
 MessageAnalysis Business::ma;
-Message_Process* Business::m_process = nullptr;
-Server_Connector* Business::s_c = nullptr;
+std::shared_ptr<Message_Process> Business::m_process = nullptr;
+std::shared_ptr<Server_Connector> Business::s_c = nullptr;
 
 void Business::startInit() {
-    log = Log::ptr;
-    lang = Language::ptr;
-    setting = Setting::ptr;
-    u_m = User_Manager::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
+    setting = Setting::ptr();
+    u_m = User_Manager::ptr();
 
-    m_process = Message_Process::ptr;
-    s_c = Server_Connector::ptr;
+    m_process = Message_Process::ptr();
+    s_c = Server_Connector::ptr();
 
     mr.startInit();
     ma.startInit();
@@ -330,7 +330,7 @@ void Business::add_user() {
     // 新建一个用户
     User new_user;
     // 设置该用户的公钥的路径
-    std::string pub_path = FileManager::ptr->get("keys") + target_uuid + ".pub";
+    std::string pub_path = FileManager::ptr()->get("keys") + target_uuid + ".pub";
     // 创建该公钥
     int fd = open(pub_path.c_str(), O_CREAT | O_RDWR, 0700);
     if (fd < 0) {
@@ -338,7 +338,7 @@ void Business::add_user() {
         return ;
     }
     // 将公钥写入文件
-    int ret = write(fd, ma.get_raw().get() + 37, key_len - 37);
+    auto ret = write(fd, ma.get_raw().get() + 37, key_len - 37);
     if (ret < 0) {
         log->log("[error] business: can not write the file: %e");
         return ;
@@ -347,7 +347,6 @@ void Business::add_user() {
     new_user.set_pub_path(pub_path);
     new_user.set_uuid(target_uuid);
     u_m->add_user(new_user);
-    return;
 }
 
 void Business::display_latency() {

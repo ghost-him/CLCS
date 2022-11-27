@@ -1,13 +1,17 @@
 #include "Server_Connector.h"
 
-Server_Connector* Server_Connector::ptr = new Server_Connector;
+std::shared_ptr<Server_Connector> Server_Connector::_ptr(new Server_Connector());
+
+std::shared_ptr<Server_Connector> Server_Connector::ptr() {
+    return _ptr;
+}
 
 void Server_Connector::startInit() {
     // 初始化内部的变量
-    log = Log::ptr;
-    lang = Language::ptr;
+    log = Log::ptr();
+    lang = Language::ptr();
     log->log((*lang)["ServerConnector_start_init"]);
-    setting = Setting::ptr;
+    setting = Setting::ptr();
     _socket_fd = 0;
     _is_connected = false;
 

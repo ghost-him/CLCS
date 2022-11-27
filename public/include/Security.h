@@ -32,10 +32,10 @@ private:
     std::string _pri_path;
 
     // 日志系统
-    Log* log;
+    std::shared_ptr<Log> log;
 
     // 语言系统
-    Language* lang;
+    std::shared_ptr<Language> lang;
 
 };
 
@@ -49,17 +49,18 @@ public:
      */
     RSA_Security();
     /*
+     * 析构函数
+     */
+    virtual ~RSA_Security();
+    /*
      * 开始初始化
      */
-    void startInit();
+    virtual void startInit();
     /*
      * 初始化为最开始的状态
      */
     void init();
-    /*
-     * 析构函数
-     */
-    virtual ~RSA_Security();
+
     /*
      * 读取密匙
      */
@@ -88,9 +89,9 @@ protected:
     // 密匙路径
     std::string _key_path;
     // 日志系统
-    Log* log;
+    std::shared_ptr<Log> log;
     // 信息系统
-    Language* lang;
+    std::shared_ptr<Language> lang;
     // 错误信息
     std::string error;
 };
@@ -100,7 +101,11 @@ protected:
  */
 class RSA_encrypt : public RSA_Security {
 public:
-    ~RSA_encrypt();
+    RSA_encrypt();
+    /*
+     * 初始化
+     */
+    void startInit() override;
     /*
      * 读取公钥
      */
@@ -125,16 +130,18 @@ public:
     /*
      * 设置被加密的信息
      */
-    void set_input(const char *);
+    void set_input(std::shared_ptr<char[]>&, size_t);
     /*
      * 获取得到的加密信息
      */
-    const unsigned char * get_output();
+    std::shared_ptr<unsigned char[]> get_output();
 private:
     // 输入的字符
-    char _input_text[BUFSIZ];
+    std::shared_ptr<char[]> _input_text;
+    // 输入的字符的长度
+    size_t _input_len;
     // 输出的字符
-    unsigned char _output_text[BUFSIZ];
+    std::shared_ptr<unsigned char[]>  _output_text;
     // 输出的字符的长度
     size_t _output_len;
 };
@@ -143,7 +150,9 @@ private:
  */
 class RSA_decrypt : public RSA_Security {
 public:
-    ~RSA_decrypt();
+    RSA_decrypt();
+
+    void startInit() override;
     /*
      * 读取私钥
      */
@@ -160,17 +169,23 @@ public:
 
     size_t size() override;
 
-    void set_input(const unsigned char *str, size_t len);
+    /*
+     * 设置输入的字符串
+     */
+    void set_input(const unsigned char*, size_t);
+    void set_input(std::shared_ptr<unsigned char[]>& str, size_t len);
     /*
      * 获取得到的解密信息
      */
-    const char * get_output();
+    std::shared_ptr<char[]> get_output();
 
 private:
     // 输入的字符
-    unsigned char _input_text[BUFSIZ];
+    std::shared_ptr<unsigned char[]> _input_text;
+    // 输入的长度
+    size_t _input_len;
     // 输出的字符
-    char _output_text[BUFSIZ];
+    std::shared_ptr<char[]> _output_text;
     // 输出的长度
     size_t _output_len;
 

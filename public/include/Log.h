@@ -10,13 +10,17 @@
 
 class Log final {
 public:
-    static Log* ptr;
+    /*
+     * 获取唯一的实例
+     */
+    static std::shared_ptr<Log> ptr();
+
+    ~Log();
+
     /*
      * 输出log日志
      */
     void log(const std::string& str);
-
-
 
     /*
      * 获取目标的文件路径
@@ -42,12 +46,10 @@ public:
     void exit_process();
 
 private:
+    static std::shared_ptr<Log> _ptr;
     // 用于锁住文件输出流
     pthread_mutex_t _stream_lock;
     Log();
-    ~Log();
-
-
 
     // 输出的位置
     std::ostream& _ost;
@@ -58,9 +60,6 @@ private:
 
     // 当前输出的是否是控制台
     bool _is_console;
-
-    // 当文件不存在时是否创建文件
-    bool _is_create;
 
     // 记录程序刚开始运行的事件
     std::chrono::steady_clock::time_point _start_time = std::chrono::steady_clock::now();

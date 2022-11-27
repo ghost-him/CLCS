@@ -9,7 +9,7 @@
 
 class Setting {
 public:
-    static Setting* ptr;
+    static std::shared_ptr<Setting> ptr();
 
     /*
      * 初始化输入
@@ -30,13 +30,14 @@ public:
 
 private:
     Setting();
-    static nlohmann::json _json;
-    static FileManager* _FileManager;
+    static std::shared_ptr<Setting> _ptr;
+    static std::shared_ptr<nlohmann::json> _json;
+    static std::shared_ptr<FileManager> _FileManager;
     // static ReadWithLine _readFile;
     static ReadJson _read_json;
     // static WriteWithLine _writeFile;
     static WriteJson _write_json;
-    static Log* log;
+    static std::shared_ptr<Log> log;
 };
 
 

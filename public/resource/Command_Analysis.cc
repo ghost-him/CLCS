@@ -1,11 +1,17 @@
 #include "Command_Analysis.h"
+
+#include <utility>
 // 初始化静态变量
-Command_Analysis *Command_Analysis::ptr = new Command_Analysis;
+std::shared_ptr<Command_Analysis> Command_Analysis::_ptr(new Command_Analysis());
+
+std::shared_ptr<Command_Analysis> Command_Analysis::ptr() {
+    return _ptr;
+}
 
 void Command_Analysis::Init_Analysis_System() {
-    log = Log::ptr;
+    _log = Log::ptr();
     _service = nullptr;
-    log->log("[info] command analysis init end");
+    _log->log("[info] command analysis init end");
 }
 
 void Command_Analysis::check(std::string && str) {
@@ -46,6 +52,6 @@ void Command_Analysis::check(std::string && str) {
     _service->update(command);
 }
 
-void Command_Analysis::set_service(Command_Service * service) {
+void Command_Analysis::set_service(const std::shared_ptr<Command_Service> & service) {
     _service = service;
 }
