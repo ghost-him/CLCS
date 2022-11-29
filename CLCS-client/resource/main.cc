@@ -7,7 +7,7 @@
 #include "stdinc.h"
 
 int main() {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "enable the debug mode" << std::endl;
 #endif
 
@@ -37,7 +37,9 @@ int main() {
 
         // 如果command为quit, 则退出程序
         if (command == "quit") {
+            std::cout << "退出中" << std::endl;
             Server_Connector::ptr()->close_connect();
+            Business::_is_closed = true;
             break;
         }
 
@@ -46,7 +48,7 @@ int main() {
 
     // 保存设置
     Business::save();
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "end the program" << std::endl;
 #endif
     return 0;

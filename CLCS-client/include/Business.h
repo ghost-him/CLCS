@@ -87,7 +87,7 @@ public:
     /*
      * 显示recall消息
      */
-    static void display_recall(const std::string&);
+    static void display_recall(const std::shared_ptr<unsigned char[]>&, size_t);
     /*
      * 显示用户发送的消息
      */
@@ -118,4 +118,5 @@ public:
 
     static std::shared_ptr<Server_Connector> s_c;
 
+    static bool _is_closed;
 };

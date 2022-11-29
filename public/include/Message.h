@@ -111,6 +111,8 @@ private:
     std::shared_ptr<unsigned char[]> _buf;
     // 生成数据的长度
     int _len;
+    // 申请的长度
+    int _max_len;
 
     // 类型
     MessageHeader::Level _level;
@@ -204,40 +206,6 @@ private:
 };
 
 
-/*
- * 负责将数据发送给服务器
- * 设计模式：单例设计模式
- */
-
-class MessageSender {
-public:
-    /*
-     * 返回唯一的实例
-     */
-    static std::shared_ptr<MessageSender> ptr();
-
-    /*
-     * 初始化
-     */
-    void startInit();
-    /*
-     * 设置要发送的文件描述符
-     */
-    void set_fd(int);
-    // 发送一个字符串
-    void send_message(const std::string&);
-    void send_message(std::shared_ptr<unsigned char[]>, int);
-
-private:
-    static std::shared_ptr<MessageSender> _ptr;
-    MessageSender();
-    // 目标服务器的文件描述符
-    int _socket_fd;
-    std::shared_ptr<Log> log ;
-    std::shared_ptr<Language> lang;
-    // 加解锁
-    std::mutex _sender;
-};
 
 /*
  * 负责从服务器或客户端接受数据
@@ -271,7 +239,7 @@ public:
     /*
      * 设置读文件, 并且设置读的长度
      */
-    void set_read_content(int len);
+    void set_read_content_len(int len);
     /*
      * 设置当前的fd
      */
@@ -289,6 +257,8 @@ private:
 
     // 受到的消息
     std::shared_ptr<unsigned char[]> _buf;
+    // 申请的最大的消息的长度
+    int _max_len;
     // 处理受到的消息
     MessageAnalysis _analysis;
     // 目标服务器

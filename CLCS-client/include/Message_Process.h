@@ -8,6 +8,7 @@
 #pragma once
 #include "Message.h"
 #include "Server_Connector.h"
+#include "MessageSender.h"
 
 class Message_Process {
 public:
@@ -45,7 +46,7 @@ private:
                       bool is_encrypt);
 
     MessageGenerator _mg;
-    std::shared_ptr<MessageSender> _ms;
+    std::shared_ptr<Client_Message_Sender> _ms;
     std::shared_ptr<Server_Connector> _sc;
     std::shared_ptr<Log> _logger;
     std::shared_ptr<User_Manager> _um;

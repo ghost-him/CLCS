@@ -50,7 +50,7 @@ std::function<void()> Init::startInit = [](){
     ThreadPool::startInit();
 
     // 初始化连接器
-    Epoll_Reactor::ptr()->Init_Epoll();
+    Epoll_Reactor::ptr()->startInit();
 };
 
 std::function<void()> Setting::first_time_run = [](){

@@ -64,20 +64,18 @@ bool RSA_controller::generate_keys(int len) {
 
 
 RSA_Security::RSA_Security() {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "_pkey new" << std::endl;
 #endif
     _pkey = nullptr;
-    std::cerr << "create pointer: " << _pkey << std::endl;
 }
 
 
 RSA_Security::~RSA_Security() {
     if (_pkey != nullptr) {
-#ifdef IS_DEBUG
+#ifdef DEBUG
         std::cerr << "_pkey delete" << std::endl;
 #endif
-        std::cerr << "delete pointer: " << _pkey << std::endl;
         EVP_PKEY_free(_pkey);
     }
 }
@@ -142,7 +140,7 @@ bool RSA_encrypt::set_key_path(const std::string & path) {
 
 bool RSA_encrypt::convert() {
     // 清空上次的内容
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "rsa_encrypt start convert" << std::endl;
 #endif
 
@@ -228,7 +226,7 @@ bool RSA_decrypt::set_key_path(const std::string & path) {
 * 将加密的信息解密
 */
 bool RSA_decrypt::convert() {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "rsa_decrypt start convert" << std::endl;
 #endif
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(_pkey, nullptr);

@@ -10,6 +10,7 @@ MessageReceiver Business::mr;
 MessageAnalysis Business::ma;
 std::shared_ptr<Message_Process> Business::m_process = nullptr;
 std::shared_ptr<Server_Connector> Business::s_c = nullptr;
+bool Business::_is_closed = false;
 
 void Business::startInit() {
     log = Log::ptr();
@@ -48,10 +49,9 @@ void Business::reset_target_ip_port() {
     m_process->init_the_server();
 
     std::cout << "设置完成! "
-              << "\n当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " + (*setting)["target_server_port"] << "\n请输入 re_connect 重新连接目标服务器" << std::endl;
+              << "\n当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " +
+                 (*setting)["target_server_port"] << "\n请输入 re_connect 重新连接目标服务器" << std::endl;
 }
-
-
 
 
 void Business::reset_target_ip_port(const std::string &ip, int port) {
@@ -59,7 +59,8 @@ void Business::reset_target_ip_port(const std::string &ip, int port) {
         std::cout << "无效的ip和端口" << std::endl;
     else
         std::cout << "设置完成! "
-                  << "\n当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " + (*setting)["target_server_port"] << "\n请输入 re_connect 重新连接目标服务器" << std::endl;
+                  << "\n当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " +
+                     (*setting)["target_server_port"] << "\n请输入 re_connect 重新连接目标服务器" << std::endl;
 }
 
 void Business::re_connect_server() {
@@ -70,10 +71,11 @@ void Business::re_connect_server() {
     if (!connect_server((*setting)["target_server_ip"], std::stoi((*setting)["target_server_port"]))) {
         //  当连接未成功的时候
         std::cout << "连接失败，请查看日志，可尝试重新设置服务器的ip和端口" << std::endl;
-        return ;
+        return;
     }
 
-    std::cout << "连接成功！当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " + (*setting)["target_server_port"] << std::endl;
+    std::cout << "连接成功！当前服务器的ip为: " + (*setting)["target_server_ip"] + " 当前的端口为: " +
+                 (*setting)["target_server_port"] << std::endl;
     mr.set_fd(s_c->get_socketfd());
 
     m_process->update_connection();
@@ -84,7 +86,8 @@ void Business::re_connect_server() {
 
 void Business::cat_connect_status() {
     if (s_c->get_connect_status())
-        std::cout << "当前已连接到: " + (*setting)["target_server_ip"] + ":" + ((*setting)["target_server_port"]) << std::endl;
+        std::cout << "当前已连接到: " + (*setting)["target_server_ip"] + ":" + ((*setting)["target_server_port"])
+                  << std::endl;
     else
         std::cout << "当前无连接" << std::endl;
 }
@@ -97,37 +100,46 @@ void Business::Testing_network_latency() {
 }
 
 void Business::start_accept_from_server() {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "start accept from server" << std::endl;
 #endif
     // 检查当前的连接状态
-    if (!s_c->get_connect_status()) {
+    if (!_is_closed && !s_c->get_connect_status()) {
+        sleep(5);
         log->log("[error] business: connect error , try to reconnect");
         std::cout << "连接失败， 尝试重新连接" << std::endl;
-        sleep(5);
         re_connect_server();
-        return ;
+        return;
     } else {
-        log->log("business accept server : success connection");
     }
     // 尝试读取消息， 查看是否可以成功读取
     int ret;
-    if ((ret = ma.get_command(&mr), ret) <= 0) {
+    if (!_is_closed && (ret = ma.get_command(&mr), ret) <= 0) {
         if (ret == 0) {
             log->log("business accept server : close connection");
             s_c->close_connect();
+            return;
         }
+
+        if (errno == EAGAIN) {
+            return ;
+        }
+
         log->log("[error] business: read message error, %e");
-        std::cout << "读取消息失败" << std::endl;
-        sleep(5);
-        return ;
+        std::cout << "读取消息失败，尝试重新连接" << std::endl;
+        s_c->close_connect();
+        return;
     } else {
-        log->log("business accept server : success get command");
     }
 
+    if (_is_closed)
+        return;
+
     // 判断消息是否在自己的信息库中
-    User* source_user = u_m->find_user(ma.get_uuid2());
-    if (source_user == nullptr && ma.get_uuid2() != User_Manager::get_server_uuid()) {
+    User *source_user = u_m->find_user(ma.get_uuid2());
+    if (source_user == nullptr &&
+        ma.get_uuid2() != User_Manager::get_server_uuid() &&
+        ma.get_uuid2() != User_Manager::get_self_uuid()) {
         // 如果不是第一次运行， 则发送消息
         if (!is_start)
             add_user(ma.get_uuid2());
@@ -143,13 +155,13 @@ void Business::start_accept_from_server() {
             auto para = ma.get_para1();
             if (para == MessageHeader::SEND) {
                 // 发送回应数据
-                return_recall(ma.get_uuid2(), ma.get_raw(), ma.get_message_len());
+                return_recall(ma.get_source_uuid(), ma.get_raw(), ma.get_content_len());
 
             } else {
                 std::cout << ma.get_content();
             }
              */
-            display_recall(ma.get_content());
+            display_recall(ma.get_raw(), ma.get_message_len());
             break;
         }
         case MessageHeader::KEY_TEST: {
@@ -165,7 +177,7 @@ void Business::start_accept_from_server() {
             break;
         }
         case MessageHeader::TEXT_CHAT: {
-#ifdef IS_DEBUG
+#ifdef DEBUG
             std::cerr << "receive message" << std::endl;
 #endif
             // 接受到了消息
@@ -193,7 +205,7 @@ void Business::start_accept_from_server() {
         }
     }
 
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "end accept from server" << std::endl;
 #endif
 
@@ -209,13 +221,13 @@ void Business::send_message(const std::string &name, const std::string &message)
     User *user = u_m->find_user(name);
     if (user == nullptr) {
         std::cout << "找不到该用户" << std::endl;
-#ifdef IS_DEBUG
+#ifdef DEBUG
         std::cerr << "找不到用户：" << name << std::endl;
 #endif
         return;
     }
     // 找到了用户
-   m_process->send_user_message(user->get_uuid(), message);
+    m_process->send_user_message(user->get_uuid(), message);
 }
 
 void Business::save() {
@@ -251,7 +263,7 @@ void Business::add_user(const std::string &uuid) {
     if (!User_Manager::check_is_uuid(uuid)) {
         log->log("[error] business : invalid uuid: " + uuid);
         std::cout << "无效的uuid" << std::endl;
-        return ;
+        return;
     }
     // 发送请求数据
     m_process->add_user(uuid);
@@ -263,13 +275,13 @@ void Business::init_server() {
     // 尝试连接
     std::string ip = (*setting)["target_server_ip"];
     int port = std::stoi((*setting)["target_server_port"]);
-    while(!connect_server(ip, port)) {
+    while (!connect_server(ip, port)) {
         // TODO 用语言管理器管理
         std::cout << "连接失败，请重新输入目标服务器的ip:" << std::endl;
         std::cin >> ip;
         std::cout << "端口:" << std::endl;
         std::cin >> port;
-    } ;
+    };
     // 初始化消息读取器
     mr.set_fd(s_c->get_socketfd());
     std::cout << "服务器连接成功" << std::endl;
@@ -279,21 +291,20 @@ void Business::init_server() {
     m_process->init_the_server();
 }
 
-bool Business::connect_server(const std::string& ip, int port) {
+bool Business::connect_server(const std::string &ip, int port) {
     s_c->set_target(ip.c_str(), port);
     s_c->start_connect();
-    if (!s_c->get_connect_status()) {
-        return false;
-    }
-    return true;
+    return s_c->get_connect_status();
 }
 
-void Business::display_recall(const std::string &message) {
-    std::cout << "recall message: " << message << std::endl;
+void Business::display_recall(const std::shared_ptr<unsigned char[]> &message, size_t len) {
+    std::cout << "------ recall message ------\n" << std::flush;
+    write(STDOUT_FILENO, message.get(), len);
+    std::cout << "\n";
 }
 
 void Business::display_user_message(const std::string &uuid, const std::string &message) {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "display user message :" << "uuid " << uuid << " message " << message << std::endl;
 #endif
 
@@ -312,14 +323,14 @@ void Business::add_user() {
     // 如果长度过低， 则说明未找到用户
     if (ma.get_message_len() < 43) {
         std::cout << "未找到该用户" << std::endl;
-        return ;
+        return;
     }
     // 将unsigned char*指针 转换为 char*
     auto con = std::reinterpret_pointer_cast<char *>(ma.get_raw());
     std::string target_uuid(36, '\0');
     // 读取uuid
     // TODO 优化读取的过程
-    for (int i = 0; i < 37; i ++) {
+    for (int i = 0; i < 37; i++) {
         target_uuid[i] = static_cast<char>(ma.get_raw().get()[i]);
     }
     // 检查该uuid是否符合uuid的格式
@@ -335,17 +346,18 @@ void Business::add_user() {
     int fd = open(pub_path.c_str(), O_CREAT | O_RDWR, 0700);
     if (fd < 0) {
         log->log("[error] business: can not open the file: " + pub_path + " %e");
-        return ;
+        return;
     }
     // 将公钥写入文件
     auto ret = write(fd, ma.get_raw().get() + 37, key_len - 37);
     if (ret < 0) {
         log->log("[error] business: can not write the file: %e");
-        return ;
+        return;
     }
     close(fd);
     new_user.set_pub_path(pub_path);
     new_user.set_uuid(target_uuid);
+    new_user.set_name(target_uuid.substr(0, 8));
     u_m->add_user(new_user);
 }
 
@@ -361,6 +373,6 @@ void Business::display_latency() {
     struct timeval now_time;
     gettimeofday(&now_time, nullptr);
     // 显示延迟
-    std::cout << "延迟为: " << (double)(now_time.tv_usec - std::stoull(time)) / 1000 << "毫秒" << std::endl;
+    std::cout << "延迟为: " << (double) (now_time.tv_usec - std::stoull(time)) / 1000 << "毫秒" << std::endl;
 }
 

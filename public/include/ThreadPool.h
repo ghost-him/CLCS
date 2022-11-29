@@ -60,7 +60,7 @@ public:
 
     template<class Func, class ...Args> // 添加任务
     static void commit(TaskLevel::Level level, Func&& function, Args&&... args) {
-#ifdef IS_DEBUG
+#ifdef DEBUG
         std::cerr << "commited task:" << function << std::endl;
 #endif
         auto task_func = std::bind(std::forward<Func>(function), std::forward<Args>(args)...);

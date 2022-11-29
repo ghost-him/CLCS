@@ -1,10 +1,9 @@
 #include "Message.h"
 
-std::shared_ptr<MessageSender> MessageSender::_ptr(new MessageSender);
-
 MessageGenerator::MessageGenerator()
     :_level(MessageHeader::RECALL), _para1(MessageHeader::NOMEAN), _para2(MessageHeader::NOMEAN){
     _len = 0;
+    _max_len = 0;
 }
 
 void MessageGenerator::startInit() {
@@ -47,7 +46,7 @@ void MessageGenerator::set_target_user_uuid(const std::string& uuid) {
     _target_user_uuid = uuid;
     enc.init();
     if (!enc.set_and_read_key(u_m->get_pub_key_path(uuid))) {
-#ifdef IS_DEBUG
+#ifdef DEBUG
         std::cerr << "set target user uuid: " << uuid << std::endl;
 #endif
         log->log("[error] MessageGenerator: set and read key error: " + u_m->get_pub_key_path(uuid));
@@ -172,8 +171,9 @@ int MessageGenerator::get_content_size() {
 }
 
 void MessageGenerator::set_content_len(int len) {
-    if (_len < len) {
-        _buf = std::make_shared<unsigned char[]>(len);
+    if (_max_len < len) {
+        _max_len = len;
+        _buf = std::make_shared<unsigned char[]>(_max_len);
     }
     _len = len;
 }
@@ -202,7 +202,7 @@ std::shared_ptr<unsigned char[]> MessageAnalysis::get_raw() {
 }
 
 const std::string& MessageAnalysis::get_content() {
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "message analysis start decrypt the content" << std::endl;
 #endif
 
@@ -220,7 +220,7 @@ const std::string& MessageAnalysis::get_content() {
         }
         return _content;
     }
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "message analysis user message" << " message length: " << _message_size << std::endl;
     std::cerr << "message analysis dec size:" << dec.size() << std::endl;
 #endif
@@ -242,12 +242,12 @@ const std::string& MessageAnalysis::get_content() {
         // 转换失败
         if (!dec.convert()) {
             _content.clear();
-#ifdef IS_DEBUG
+#ifdef DEBUG
             std::cerr << "rsa_decrypt end convert failed" << std::endl;
 #endif
             return _content;
         }
-#ifdef IS_DEBUG
+#ifdef DEBUG
         std::cerr << "rsa_decrypt end convert" << std::endl;
 #endif
         // 将转换好的字节块添加到文字后面
@@ -255,7 +255,7 @@ const std::string& MessageAnalysis::get_content() {
         // 读取下一个字节块
         block ++;
     }
-#ifdef IS_DEBUG
+#ifdef DEBUG
     std::cerr << "message analysis: content " <<  _content << std::endl;
 #endif
 
@@ -304,7 +304,7 @@ int MessageAnalysis::get_command(MessageReceiver* mr) {
         return false;
     ss >> _message_size;
     // 设置读取的长度
-    mr->set_read_content(_message_size);
+    mr->set_read_content_len(_message_size);
 
     // 如果读成功了
     if ((ret = mr->read_content()) > 0) {
@@ -337,54 +337,6 @@ bool MessageAnalysis::check_header(const char * header) {
     return true;
 }
 
-std::shared_ptr<MessageSender> MessageSender::ptr() {
-    return _ptr;
-}
-
-void MessageSender::startInit() {
-    log = Log::ptr();
-    lang = Language::ptr();
-}
-
-void MessageSender::set_fd(int target) {
-    _socket_fd = target;
-}
-
-void MessageSender::send_message(const std::string & str) {
-    _sender.lock();
-    log->log("[info] message sender start send message");
-
-    // 只负责发送消息
-    ssize_t ret = write(_socket_fd, str.c_str(), str.size());
-
-    _sender.unlock();
-    log->log("[info] message sender end send message");
-    // 判断返回值
-    if (ret == -1) {
-        log->log((*lang)["MessageSender_send_str_error"]);
-    }
-
-}
-
-void MessageSender::send_message(std::shared_ptr<unsigned char[]> str, int len) {
-    _sender.lock();
-    log->log("[info] message sender start send message");
-
-    // 发送加密的消息
-    ssize_t ret = write(_socket_fd, str.get(), len);
-
-    _sender.unlock();
-    log->log("[info] message sender end send message");
-    // 判断返回值
-    if (ret == -1) {
-        log->log((*lang)["MessageSender_send_ptr_error"]);
-    }
-}
-
-MessageSender::MessageSender() {
-    _socket_fd = 0;
-}
-
 void MessageReceiver::startInit() {
     log = Log::ptr();
     lang = Language::ptr();
@@ -399,7 +351,7 @@ std::shared_ptr<unsigned char[]> MessageReceiver::get_content() {
 }
 
 int MessageReceiver::read_header() {
-#ifdef IS_DEBUG
+#ifdef DEBUG_INPUT
     std::cerr << "try to read _header" << std::endl;
 #endif
 
@@ -420,8 +372,10 @@ int MessageReceiver::read_header() {
     }while (total_len < 100 && *(_header.get() + total_len) != '\n');
     // 设置读到的长度
     _header_len = total_len + 1; // total_len的长度是消息的长度， 不包含最后的\n
-#ifdef IS_DEBUG
-    std::cerr << "message receiver receive _header: " << _header << std::endl;
+#ifdef DEBUG_INPUT
+    std::cerr << "message receiver receive _header: ";
+    write(STDERR_FILENO, _header.get(), _header_len);
+    std::cerr << std::endl;
 #endif
     // 标记结尾，防止上一次的结果对这次的有影响
     _header[_header_len] = '\0';
@@ -438,8 +392,11 @@ int MessageReceiver::read_content() {
     _is_content = false;
 
     // 当需要重新设置大小的时候才会设置大小
-    if (_is_reset)
-        _buf = std::make_shared<unsigned char[]>(_content_len);
+    if (_is_reset) {
+        _buf = std::make_shared<unsigned char[]>(_max_len);
+        _is_reset = false;
+    }
+
 
     // 函数的返回值
     int ret;
@@ -455,19 +412,23 @@ int MessageReceiver::read_content() {
         return 0;
     }
     // 正常读完所有的消息
-#ifdef IS_DEBUG
-    std::cerr << "message receiver receive content: " << _buf << std::endl;
+#ifdef DEBUG_INPUT
+    std::cerr << "message receiver receive content: ";
+    write(STDERR_FILENO, _buf.get(), _content_len);
+    std::cerr << std::endl;
 #endif
     // 返回返回值
     return ret;
 }
 
-void MessageReceiver::set_read_content(int len) {
+void MessageReceiver::set_read_content_len(int len) {
     // 设置要读的内容
     _is_content = true;
     // 如果当前的大小比输入的大时，则无需重新设置大小
-    if (len > _content_len)
+    if (len > _max_len) {
         _is_reset = true;
+        _max_len = len;
+    }
     else
         _is_reset = false;
 

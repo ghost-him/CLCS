@@ -8,7 +8,7 @@ std::shared_ptr<Message_Process> Message_Process::ptr() {
 
 void Message_Process::startInit() {
     _sc = Server_Connector::ptr();
-    _ms = MessageSender::ptr();
+    _ms = Client_Message_Sender::ptr();
     _logger = Log::ptr();
     _um = User_Manager::ptr();
 

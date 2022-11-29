@@ -72,8 +72,10 @@ bool Server_Connector::start_connect() {
 
 
 void Server_Connector::close_connect() {
-    shutdown(_socket_fd, 2);
-    // 断开了连接
+    // 关闭连接
+    shutdown(_socket_fd, SHUT_RDWR);
+    // 断开连接
+    close(_socket_fd);
     _is_connected = false;
 }
 
