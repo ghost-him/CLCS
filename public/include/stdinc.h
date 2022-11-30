@@ -29,6 +29,7 @@
 #include <map>
 #include <list>
 #include <memory>
+#include <typeinfo>
 
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -39,34 +40,39 @@
 #include <nlohmann/json.hpp>
 #include <mysql/mysql.h>
 
+#include <Message_Displayer.h>
+
 /*
  * 控制是否开启调试模式
  */
 
-// #define DEBUG
-#define DEBUG_EPOLL
-// #define DEBUG_THREAD_POOL
-// #define DEBUG_OUTPUT
- #define DEBUG_INPUT
+//#define DEBUG_MAIN            // 程序流程调试
+//#define DEBUG_EPOLL           // epoll reactor 调试
+//#define DEBUG_THREAD_POOL     // 线程池调试
+//#define DEBUG_OUTPUT          // 输出数据调试
+//#define DEBUG_INPUT           // 输入数据调试
+//#define DEBUG_CLIENT_BUSINESS // 客户端事务调试
 
-class DefaultOption;
+
+ /*
+  * 全局变量
+  */
+#define OUT OUT::ptr()
+#define IN IN::ptr()
+
+
+class Default_Option;
 class Event;
 class Epoll_Reactor;
-//class ReadFile;
-//class ReadWithLine;
-//class ReadUser;
-//class WriteFile;
-//class WriteWithLine;
-//class WriteUser;
-class FileManager;
+class File_Manager;
 class Init;
 class Language;
 class Log;
-class MessageHeader;
-class MessageSender;
-class MessageReceiver;
-class MessageGenerator;
-class MessageAnalysis;
+class Message_Header;
+class Message_Sender;
+class Message_Receiver;
+class Message_Generator;
+class Message_Analysis;
 class RSA_controller;
 class RSA_Security;
 class RSA_encrypt;
@@ -75,6 +81,7 @@ class Setting;
 class threadPool_t;
 class TaskLevel;
 class Task;
-class ThreadPool;
+class Thread_Pool;
 class User;
 class User_Manager;
+

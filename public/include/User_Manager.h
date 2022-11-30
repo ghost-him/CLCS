@@ -98,6 +98,6 @@ private:
     // 设置系统
     std::shared_ptr<Setting> setting;
     // 文件管理器
-    std::shared_ptr<FileManager> fm;
+    std::shared_ptr<File_Manager> fm;
 };
 

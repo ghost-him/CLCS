@@ -8,8 +8,6 @@
 #include "User_Manager.h"
 #include "Message_Process.h"
 
-class MessageReceiver;
-
 class Business {
 public:
     /*
@@ -111,8 +109,8 @@ public:
     static std::shared_ptr<Setting> setting;
     static std::shared_ptr<User_Manager> u_m;
 
-    static MessageReceiver mr;
-    static MessageAnalysis ma;
+    static Message_Receiver mr;
+    static Message_Analysis ma;
 
     static std::shared_ptr<Message_Process> m_process;
 

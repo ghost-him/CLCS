@@ -6,14 +6,20 @@ class Message_Header_Analysis {
 public :
     void set_header(const std::shared_ptr<char[]>&);
 
+    /*
+     * 开始解析内容
+     */
     bool convert();
 
-    MessageHeader::Level get_level();
+    /*
+     * 获取类型
+     */
+    Message_Header::Level get_level();
     /*
      * 获取参数1和参数2
      */
-    MessageHeader::Option get_para1();
-    MessageHeader::Option get_para2();
+    Message_Header::Option get_para1();
+    Message_Header::Option get_para2();
     /*
      * 获取uuid
      */
@@ -27,11 +33,11 @@ public :
 private:
     std::shared_ptr<char[]> _header = nullptr;
     // 当前的消息类型
-    MessageHeader::Level _level = 0;
+    Message_Header::Level _level = 0;
     // 参数1
-    MessageHeader::Option _para1 = 0;
+    Message_Header::Option _para1 = 0;
     // 参数2
-    MessageHeader::Option _para2 = 0;
+    Message_Header::Option _para2 = 0;
     // 目标uuid
     std::string _uuid1;
     // 自己的uuid

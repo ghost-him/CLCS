@@ -1,6 +1,6 @@
 #include "Default.h"
 
-const nlohmann::json DefaultOption::store =R"({
+const nlohmann::json Default_Option::store =R"({
         "sys_language": "zh_CN",
         "target_server_ip": "default",
         "target_server_port": "6000",
@@ -15,7 +15,7 @@ const nlohmann::json DefaultOption::store =R"({
         "pri_key_path": ""
 })"_json;
 
-const nlohmann::json DefaultOption::language = R"({
+const nlohmann::json Default_Option::language = R"({
         "epoll_reactor_create_tree_failed": "[error] epoll_reactor: create epoll tree failed: %e",
         "epoll_reactor_create_socket_failed": "[error] epoll_reactor: create socket error: %e",
         "epoll_reactor_invalid_ip": "[warn] epoll_reactor: invalid ip:",
@@ -31,18 +31,18 @@ const nlohmann::json DefaultOption::language = R"({
         "epoll_reactor_write_error": "[error] epoll_reactor write error , %e",
         "epoll_reactor_start_listen": "[info] epoll_reactor: start_listen",
         "epoll_reactor_wait_error": "[error] epoll_reactor wait error: %e",
-        "threadPool_start_init": "[info] ThreadPool start init ",
-        "threadPool_start_running": "[info] ThreadPool running ",
-        "threadPool_create_failed": "[error] ThreadPool create thread failed: ",
+        "threadPool_start_init": "[info] Thread_Pool start init ",
+        "threadPool_start_running": "[info] Thread_Pool running ",
+        "threadPool_create_failed": "[error] Thread_Pool create thread failed: ",
         "ReadWithLine_read_failed": "[error] ReadWithLine: read file failed, location: ",
         "ReadWithLine_read_invalid": "[warn] invalid line",
         "WriteWithLine_invalid_path": "[error] ReadWithLine: invalid path",
-        "MessageGenerator_invalid_level": "[warn] MessageGenerator: message level not exist :",
-        "MessageSender_message_too_long": "[error] MessageSender: string to be send up to max size",
-        "MessageSender_send_error": "[error] MessageSender: send error: %e",
+        "MessageGenerator_invalid_level": "[warn] Message_Generator: message level not exist :",
+        "MessageSender_message_too_long": "[error] Message_Sender: string to be send up to max size",
+        "MessageSender_send_error": "[error] Message_Sender: send error: %e",
         "MessageReceiver_read_error": "[error] MessageReceive: read file error",
-        "MessageReceiver_close_connect": "[info] MessageReceiver: closing the connect",
-        "MessageReceiver_read_error": "[error] MessageReceiver read socket error, %e",
+        "MessageReceiver_close_connect": "[info] Message_Receiver: closing the connect",
+        "MessageReceiver_read_error": "[error] Message_Receiver read socket error, %e",
         "MessageReceiver_read_content_error": "[debug] MessageReceive exec read_content() error",
         "ServerConnector_start_init": "[info] server_connector: start init",
         "ServerConnector_ip_not_exist": "[error] ip is not exist: %e",

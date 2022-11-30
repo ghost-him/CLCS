@@ -34,14 +34,14 @@ bool Message_Header_Analysis::convert() {
     return true;
 }
 
-MessageHeader::Level Message_Header_Analysis::get_level() {
+Message_Header::Level Message_Header_Analysis::get_level() {
     return _level;
 }
 
-MessageHeader::Option Message_Header_Analysis::get_para1() {
+Message_Header::Option Message_Header_Analysis::get_para1() {
     return _para1;
 }
-MessageHeader::Option Message_Header_Analysis::get_para2() {
+Message_Header::Option Message_Header_Analysis::get_para2() {
     return _para2;
 }
 

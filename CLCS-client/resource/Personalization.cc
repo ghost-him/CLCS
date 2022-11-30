@@ -8,7 +8,7 @@
 std::shared_ptr<Command_Service> command_service = std::make_shared<Command_Service>();
 void add_command() {
     command_service->alert = [](){
-        std::cout << "无效的指令格式或参数！！！输入help来查看当前支持的参数" << "\n";
+        OUT << "无效的指令格式或参数！！！输入help来查看当前支持的参数";
     };
 
     command_service->set("help", "输出此条信息") = [](const std::vector<std::string>& param){
@@ -53,7 +53,7 @@ void add_command() {
 
     command_service->get("cat")->set("time", "当前系统的时间") = [](const std::vector<std::string>& param){
         auto a = time(nullptr);
-        std::cout << ctime(&a) << std::endl;
+        OUT << (std::string)ctime(&a);
     };
 
     command_service->set("recall", "向服务器发送回调消息") = [](const std::vector<std::string>& param){
@@ -103,8 +103,15 @@ void add_command() {
 }
 
 std::function<void()> Init::startInit = [](){
-    system("figlet CLCS");
-    auto file_manager = FileManager::ptr();
+    OUT << R"(
+  ____ _     ____ ____             _ _            _
+ / ___| |   / ___/ ___|        ___| (_) ___ _ __ | |_
+| |   | |  | |   \___ \ _____ / __| | |/ _ \ '_ \| __|
+| |___| |__| |___ ___) |_____| (__| | |  __/ | | | |_
+ \____|_____\____|____/       \___|_|_|\___|_| |_|\__|
+)";
+
+    auto file_manager = File_Manager::ptr();
     // 添加默认的文件路径
     file_manager->_dir_path["history"] = "history/";
     file_manager->_dir_path["option"] = "option/";
@@ -131,7 +138,7 @@ std::function<void()> Init::startInit = [](){
     struct tm time_struct;
     time_struct = *localtime(&time_now);
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &time_struct);
-    Log::ptr()->setFilePath((std::string)"log/" + buf);
+    Log::ptr()->setFilePath((std::string)"log/" + buf + ".log");
 
     // 初始化设置系统
     Setting::ptr()->startInit();
@@ -147,7 +154,7 @@ std::function<void()> Init::startInit = [](){
     User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
-    ThreadPool::startInit();
+    Thread_Pool::startInit();
 
     // 初始化服务器连接器
     Server_Connector::ptr()->startInit();
@@ -168,25 +175,26 @@ std::function<void()> Init::startInit = [](){
 };
 
 std::function<void()> Setting::first_time_run = [](){
-    std::cout << "欢迎使用CLCS!\n接下来将进行进一步的设置， 从而来保证获得最佳的体验。" << std::endl;
-    std::cout << "Welcome to CLCS! Further settings will be made to ensure the best experience.\n" << std::endl;
-    std::cout << "选择语言：" << std::endl;
-    std::cout << "choose language: \n" << std::endl;
-    std::cout << "1. 简体中文(默认/default)\n2. english\n" << std::endl;
-    char temp = getchar();
+    OUT << "欢迎使用CLCS!\n接下来将进行进一步的设置， 从而来保证获得最佳的体验。";
+    OUT << "Welcome to CLCS! Further settings will be made to ensure the best experience.\n";
+    OUT << "选择语言：";
+    OUT << "choose language: \n";
+    OUT << "1. 简体中文(默认/default)\n2. english\n";
+    char temp;
+    IN >> temp;
     if (temp == '2')
         set("sys_language", "en_US");
 
-    std::cout << "请输入目标服务器的ip:" << std::endl;
-    std::cout << "Please enter the ip of the target server:\n" << std::endl;
+    OUT << "请输入目标服务器的ip:";
+    OUT << "Please enter the ip of the target server:\n";
     std::string targetIp;
-    std::cin >> targetIp;
+    IN >> targetIp;
     set("target_server_ip", targetIp);
 
-    std::cout << "请输入目标服务器的端口:" << std::endl;
-    std::cout << "Please enter the port of the target server:\n" << std::endl;
+    OUT << "请输入目标服务器的端口:";
+    OUT << "Please enter the port of the target server:\n";
     int port;
-    std::cin >> port;
+    IN >> port;
     set("target_server_port", std::to_string(port));
 
     auto hardware_cur = std::thread::hardware_concurrency();
@@ -206,7 +214,7 @@ std::function<void()> Setting::first_time_run = [](){
 
     // 初始化自己的密匙
     RSA_controller generator;
-    auto f = FileManager::ptr();
+    auto f = File_Manager::ptr();
     std::string pri_path = f->get("keys") + "self.pri";
     std::string pub_path = f->get("keys") + "self.pub";
     generator.set_private_key_path(pri_path);
@@ -216,5 +224,5 @@ std::function<void()> Setting::first_time_run = [](){
     set("pub_key_path", pub_path);
     set("pri_key_path", pri_path);
 
-    std::cout << "初始化完成" << std::endl;
+    OUT << "初始化完成";
 };

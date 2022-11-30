@@ -1,7 +1,7 @@
 #pragma once
 #include "stdinc.h"
 #include "Event_Buf.h"
-#include "MessageSender.h"
+#include "Message_Sender.h"
 #include "Epoll_Reactor_Service.h"
 
 
@@ -28,6 +28,14 @@ public :
     void set_is_content(bool);
     bool get_is_content();
 
+    // 设置自己的uuid
+    void set_uuid(const std::string &);
+    // 获取自己的uuid
+    std::string get_uuid();
+
+    /*
+     * 获取临时信息
+     */
     std::shared_ptr<Message_Stream> get_temp_message();
 
     /*
@@ -40,11 +48,6 @@ public :
     }
     // 执行回调函数
     void execute();
-
-    // 设置当前元素在存储器中的位置
-    void set_location(std::list<std::shared_ptr<Event>>::iterator&&);
-    // 获取当前元素在存储器中的位置
-    std::list<std::shared_ptr<Event>>::iterator get_location();
 
     // 获取自己的指针
     std::shared_ptr<Event> get_self();
@@ -65,10 +68,10 @@ private :
     std::shared_ptr<Server_Message_Sender> _sender;
     // 自己的回调函数
     std::function<void()> _function;
-    // 自己在储存器中的位置
-    std::list<std::shared_ptr<Event>>::iterator _location;
     // 是否是数据
     bool _is_content;
+    // uuid
+    std::string _uuid;
 
     // 临时读取区
     std::shared_ptr<Message_Stream> _temp_message;

@@ -1,9 +1,9 @@
 #pragma once
 #include "stdinc.h"
-#include "FileManager.h"
+#include "File_Manager.h"
 #include "Language.h"
 #include "Setting.h"
-#include "ThreadPool.h"
+#include "Thread_Pool.h"
 #include "Message.h"
 #include "Command_Analysis.h"
 #include "Command_Service.h"

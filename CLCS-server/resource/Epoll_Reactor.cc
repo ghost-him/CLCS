@@ -47,10 +47,9 @@ void Epoll_Reactor::startInit() {
         log->exit_process();
     }
 
-    // 设置ip,端口复用
+    // 设置端口复用
     int opt = 1;
     setsockopt(_server_socket_fd, SOL_SOCKET, SO_REUSEPORT, (void *)&opt, sizeof(opt));
-    setsockopt(_server_socket_fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof(opt));
 
     // 设置为非阻塞的
     if (!_service->set_nonblock(_server_socket_fd)) {
@@ -99,51 +98,72 @@ void Epoll_Reactor::startInit() {
     // 设置属性
     deamon->set_socket_fd(_server_socket_fd);
     deamon->set_event_status(EPOLLIN | EPOLLET);
-    deamon->set_function(&Epoll_Reactor_Service::accept_connection, _service);
+    deamon->set_function(Epoll_Reactor_Service::accept_connection);
     // 添加到监听树中
     epoll_add_event(deamon);
 }
 
-void Epoll_Reactor::store_add_event(const std::shared_ptr<Event> & ptr) {
-    _event_store.emplace_front(ptr);
-    ptr->set_location(_event_store.begin());
-    std::cerr << "store add event " << ptr->get_socket_fd() << std::endl;
+void Epoll_Reactor::store_add_event(std::shared_ptr<Event> ptr) {
+    _data_structure_lock.lock();
+    _event_store.insert(ptr);
+    _data_structure_lock.unlock();
 }
 
-void Epoll_Reactor::store_remove_event(const std::shared_ptr<Event> & ptr) {
-    std::cerr << "store remove event " << ptr->get_socket_fd() << std::endl;
-    _event_store.erase(ptr->get_location());
+void Epoll_Reactor::store_remove_event(std::shared_ptr<Event> ptr) {
+    _data_structure_lock.lock();
+    _event_store.erase(ptr);
+    _user_store.erase(ptr->get_uuid());
+    _data_structure_lock.unlock();
 }
 
-void Epoll_Reactor::epoll_add_event(const std::shared_ptr<Event> & ptr) {
+void Epoll_Reactor::epoll_add_event(std::shared_ptr<Event> ptr) {
+
     epoll_event events = {0, {nullptr}};
 
     events.data.ptr = ptr->get_epoll_event()->data.ptr;
     events.events = ptr->get_epoll_event()->events;
 #ifdef DEBUG_EPOLL
-    std::cerr << "Epoll_Reactor epoll_add_event" << ptr->get_epoll_event()->events << std::endl;
+    std::cerr << "Epoll_Reactor epoll_add_event " << ptr->get_socket_fd() << std::endl;
 #endif
+    _data_structure_lock.lock();
     if (epoll_ctl(_root,
                   EPOLL_CTL_ADD,
                   ptr->get_socket_fd(),
                   &events)) {
         log->log("[error] epoll reactor add event error %e , fd: " + std::to_string(ptr->get_socket_fd()));
     }
+    _data_structure_lock.unlock();
 }
 
-void Epoll_Reactor::epoll_erase_event(const std::shared_ptr<Event> & ptr) {
+void Epoll_Reactor::epoll_erase_event(std::shared_ptr<Event> ptr) {
     epoll_event temp = {0, {nullptr}};
     temp.data.ptr = nullptr;
-
+    _data_structure_lock.lock();
     if (epoll_ctl(_root,
                   EPOLL_CTL_DEL,
                   ptr->get_socket_fd(),
                   &temp)) {
         log->log("[error] epoll reactor erase event error %e , fd: " + std::to_string(ptr->get_socket_fd()));
     }
+    _data_structure_lock.unlock();
 }
 
-void Epoll_Reactor::disconnect(const std::shared_ptr<Event> & ptr) {
+void Epoll_Reactor::epoll_flush_event(std::shared_ptr<Event> ptr) {
+    epoll_event events = {0, {nullptr}};
+
+    events.data.ptr = ptr->get_epoll_event()->data.ptr;
+    events.events = ptr->get_epoll_event()->events;
+
+    _data_structure_lock.lock();
+    if (epoll_ctl(_root,
+                  EPOLL_CTL_MOD,
+                  ptr->get_socket_fd(),
+                  &events)) {
+    }
+    _data_structure_lock.unlock();
+}
+
+void Epoll_Reactor::disconnect(std::shared_ptr<Event> ptr) {
 #ifdef DEBUG_EPOLL
     std::cerr << "closing the connect, fd: " << ptr->get_socket_fd() << std::endl;
 #endif
@@ -162,18 +182,20 @@ void Epoll_Reactor::start_listen() {
         std::shared_ptr<Event> ptr = ((Event *)_run_events[i].data.ptr)->get_self();
 
         if ((_run_events[i].events & (EPOLLIN | EPOLLET)) && (ptr->get_epoll_event()->events & (EPOLLIN | EPOLLET))) {
-            ThreadPool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr);
-            //ptr->execute();
+            //Thread_Pool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr.get());
+            ptr->execute();
+        } else {
+            epoll_flush_event(ptr);
         }
 
         if ((_run_events[i].events & (EPOLLOUT | EPOLLET)) && (ptr->get_epoll_event()->events & (EPOLLOUT | EPOLLET))) {
-            ThreadPool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr);
-            //ptr->execute();
+            //Thread_Pool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr.get());
+            ptr->execute();
+        } else {
+            epoll_flush_event(ptr);
         }
     }
 }
-
-
 
 Epoll_Reactor::Epoll_Reactor() {
     /*
@@ -190,11 +212,18 @@ Epoll_Reactor::Epoll_Reactor() {
     _max_connect = 4096;
 }
 
-bool Epoll_Reactor::add_user(const std::shared_ptr<Event> & ptr, const std::shared_ptr<Message_Stream>& message) {
-    // 检查当前的用户是否已经存在
+bool Epoll_Reactor::add_user(std::shared_ptr<Event> ptr,std::shared_ptr<Message_Stream> message) {
+    // 添加在线用户
+    ptr->set_uuid(message->analysis.get_source_uuid());
+    _user_store.emplace(message->analysis.get_source_uuid(), ptr);
+    // 检查当前的用户是否已经存在在数据库中
     auto answer = u_m->find_user(message->analysis.get_source_uuid());
     if (answer != nullptr)
         return true;
+
+#ifdef DEBUG_EPOLL
+    std::cerr << "add user: " << message->analysis.get_source_uuid() << std::endl;
+#endif
 
     // 如果不存在，则创建一个
     User new_user;
@@ -202,7 +231,7 @@ bool Epoll_Reactor::add_user(const std::shared_ptr<Event> & ptr, const std::shar
     new_user.set_uuid(message->analysis.get_source_uuid());
     // 设置公钥路径
     // 创建公钥文件
-    std::string pub_path = FileManager::ptr()->get("keys") + message->analysis.get_source_uuid() + ".pub";
+    std::string pub_path = File_Manager::ptr()->get("keys") + message->analysis.get_source_uuid() + ".pub";
     int file_fd = open(pub_path.c_str(), O_CREAT|O_RDWR, 0700);
     if (file_fd < 0) {
         log->log("[error] epoll_reactor: open file error:, %e");
@@ -219,7 +248,6 @@ bool Epoll_Reactor::add_user(const std::shared_ptr<Event> & ptr, const std::shar
     // 添加到管理器中
     new_user.set_pub_path(pub_path);
     u_m->add_user(new_user);
-    _user_store.emplace(message->analysis.get_source_uuid(), ptr->get_location());
     log->log("[info] epoll_reactor: add user finish");
     return true;
 }

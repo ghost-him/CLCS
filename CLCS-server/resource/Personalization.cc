@@ -3,8 +3,17 @@
 #include "Setting.h"
 
 std::function<void()> Init::startInit = [](){
-    system("figlet CLCS");
-    auto file_manager = FileManager::ptr;
+    OUT << R"(
+  ____ _     ____ ____
+ / ___| |   / ___/ ___|       ___  ___ _ ____   _____ _ __
+| |   | |  | |   \___ \ _____/ __|/ _ \ '__\ \ / / _ \ '__|
+| |___| |__| |___ ___) |_____\__ \  __/ |   \ V /  __/ |
+ \____|_____\____|____/      |___/\___|_|    \_/ \___|_|
+)";
+
+    signal(SIGPIPE, SIG_IGN);
+
+    auto file_manager = File_Manager::ptr;
     // 添加默认的文件路径
     file_manager()->_dir_path["history"] = "history/";
     file_manager()->_dir_path["option"] = "option/";
@@ -47,7 +56,7 @@ std::function<void()> Init::startInit = [](){
     User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
-    ThreadPool::startInit();
+    Thread_Pool::startInit();
 
     // 初始化连接器
     Epoll_Reactor::ptr()->startInit();
@@ -99,7 +108,7 @@ std::function<void()> Setting::first_time_run = [](){
 
     // 初始化自己的密匙
     RSA_controller generator;
-    auto f = FileManager::ptr();
+    auto f = File_Manager::ptr();
     std::string pri_path = f->get("keys") + "self.pri";
     std::string pub_path = f->get("keys") + "self.pub";
     generator.set_private_key_path(pri_path);

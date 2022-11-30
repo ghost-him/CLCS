@@ -1,4 +1,4 @@
-#include "MessageSender.h"
+#include "Message_Sender.h"
 
 std::shared_ptr<Client_Message_Sender> Client_Message_Sender::_ptr(new Client_Message_Sender());
 
@@ -7,20 +7,20 @@ std::shared_ptr<Client_Message_Sender> Client_Message_Sender::ptr() {
     return _ptr;
 }
 
-void MessageSender::startInit() {
+void Message_Sender::startInit() {
     log = Log::ptr();
     lang = Language::ptr();
 }
 
-void MessageSender::set_fd(int target) {
+void Message_Sender::set_fd(int target) {
     _socket_fd = target;
 }
 
-int MessageSender::get_fd() {
+int Message_Sender::get_fd() {
     return _socket_fd;
 }
 
-int MessageSender::send_message(const std::string & str) {
+int Message_Sender::send_message(const std::string & str) {
     _sender.lock();
     log->log("[info] message sender start send message");
 
@@ -44,7 +44,7 @@ int MessageSender::send_message(const std::string & str) {
 
 }
 
-int MessageSender::send_message(std::shared_ptr<unsigned char[]> message, int len) {
+int Message_Sender::send_message(std::shared_ptr<unsigned char[]> message, int len) {
     _sender.lock();
     log->log("[info] message sender start send message");
 
@@ -67,7 +67,7 @@ int MessageSender::send_message(std::shared_ptr<unsigned char[]> message, int le
     return ret;
 }
 
-MessageSender::MessageSender() {
+Message_Sender::Message_Sender() {
     _socket_fd = 0;
 }
 

@@ -1,6 +1,9 @@
 #include "Epoll_Reactor_Service.h"
 
-void Epoll_Reactor_Service::set_epoll_reactor(const std::shared_ptr<Epoll_Reactor> &ptr) {
+std::shared_ptr<Epoll_Reactor> Epoll_Reactor_Service::_epoll_reactor = nullptr;
+Message_Generator Epoll_Reactor_Service::mg;
+
+void Epoll_Reactor_Service::set_epoll_reactor(std::shared_ptr<Epoll_Reactor> ptr) {
     _epoll_reactor = ptr;
     mg.startInit();
 }
@@ -31,19 +34,17 @@ void Epoll_Reactor_Service::accept_connection() {
     _epoll_reactor->store_add_event(event);
     event->set_socket_fd(client_fd);
     event->set_event_status(EPOLLIN | EPOLLET);
-    event->set_function(&Epoll_Reactor_Service::receive_message, _epoll_reactor->_service, event);
+    event->set_function(Epoll_Reactor_Service::receive_message, event);
     _epoll_reactor->epoll_add_event(event);
 #ifdef DEBUG_EPOLL
     std::cerr << "new fd: " << client_fd << std::endl;
 #endif
 }
 
-void Epoll_Reactor_Service::receive_message(const std::shared_ptr<Event> &ptr) {
+void Epoll_Reactor_Service::receive_message(std::shared_ptr<Event> ptr) {
 #ifdef DEBUG_EPOLL
-    std::cerr << "Epoll_Reactor_Service receive message" << std::endl;
+    std::cerr << "Epoll_Reactor_Service receive message" << std::to_string(ptr->get_socket_fd()) << std::endl;
 #endif
-    std::cerr << "start to  receive message" << std::endl;
-
     std::shared_ptr<Message_Stream> message = ptr->get_temp_message();
     // 当有内容可以读的时候，就一直读
     if (!ptr->get_is_content()) {
@@ -169,11 +170,12 @@ void Epoll_Reactor_Service::receive_message(const std::shared_ptr<Event> &ptr) {
         // 分析数据，执行相应的函数
         analysis(ptr);
     }
-
-    std::cerr << "end to receive" << std::endl;
+#ifdef DEBUG_EPOLL
+    std::cerr << "end to receive" <<   std::to_string(ptr->get_socket_fd()) << std::endl;
+#endif
 }
 
-void Epoll_Reactor_Service::analysis(const std::shared_ptr<Event> &ptr) {
+void Epoll_Reactor_Service::analysis(std::shared_ptr<Event> ptr) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service start to analysis message" << std::endl;
 #endif
@@ -185,7 +187,7 @@ void Epoll_Reactor_Service::analysis(const std::shared_ptr<Event> &ptr) {
         std::cerr << "Epoll_Reactor_Service analysis nullptr" << std::endl;
 #endif
         ptr->set_event_status(EPOLLIN | EPOLLET);
-        ptr->set_function(&Epoll_Reactor_Service::receive_message, _epoll_reactor->_service, ptr);
+        ptr->set_function(Epoll_Reactor_Service::receive_message, ptr);
         _epoll_reactor->epoll_add_event(ptr);
         return;
     }
@@ -201,15 +203,12 @@ void Epoll_Reactor_Service::analysis(const std::shared_ptr<Event> &ptr) {
     std::cerr << "Epoll_Reactor_Service start to choice the message" << std::endl;
 #endif
     switch (header.get_level()) {
-        case MessageHeader::RECALL: {
+        case Message_Header::RECALL: {
             send_recall_message(ptr, message);
             break;
         }
-        case MessageHeader::TEXT_SYS: {
-            if (header.get_para1() == MessageHeader::INIT_SYS) {
-#ifdef DEBUG_EPOLL
-                std::cerr << "Epoll_Reactor_Service INIT_SYS" << std::endl;
-#endif
+        case Message_Header::TEXT_SYS: {
+            if (header.get_para1() == Message_Header::INIT_SYS) {
                 // 储存当前的用户
                 if (!_epoll_reactor->add_user(ptr, message)) {
                     // 添加用户失败， 断开连接
@@ -217,20 +216,17 @@ void Epoll_Reactor_Service::analysis(const std::shared_ptr<Event> &ptr) {
                     _epoll_reactor->disconnect(ptr);
                     _epoll_reactor->store_remove_event(ptr);
                 }
-#ifdef DEBUG_EPOLL
-                std::cerr << "Epoll_Reactor_Service init the client" << std::endl;
-#endif
                 init_the_client(ptr, message);
-            } else if (header.get_para1() == MessageHeader::ADD_USER) {
+            } else if (header.get_para1() == Message_Header::ADD_USER) {
                 // 客户端请求当前的uuid的信息
                 send_user_key(ptr, message);
-            } else if (header.get_para1() == MessageHeader::TIME) {
+            } else if (header.get_para1() == Message_Header::TIME) {
                 // 直接返回该消息即可
                 send_time_message(ptr, message);
             }
             break;
         }
-        case MessageHeader::TEXT_CHAT: {
+        case Message_Header::TEXT_CHAT: {
             redirect_the_message(ptr, message);
             break;
         }
@@ -248,24 +244,24 @@ bool Epoll_Reactor_Service::set_nonblock(int fd) {
 }
 
 
-bool Epoll_Reactor_Service::check_header(const std::shared_ptr<char[]> &ptr) {
+bool Epoll_Reactor_Service::check_header(std::shared_ptr<char[]> ptr) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service start check_header message" << std::endl;
 #endif
     switch (*ptr.get()) {
-        case MessageHeader::RECALL: {
-            if (*(ptr.get() + 2) != MessageHeader::NOMEAN || (*(ptr.get() + 4) != MessageHeader::NOMEAN))
+        case Message_Header::RECALL: {
+            if (*(ptr.get() + 2) != Message_Header::NOMEAN || (*(ptr.get() + 4) != Message_Header::NOMEAN))
                 return false;
             break;
         }
-        case MessageHeader::TEXT_CHAT: {
-            if (*(ptr.get() + 2) != MessageHeader::NOMEAN || *(ptr.get() + 4) != MessageHeader::NOMEAN)
+        case Message_Header::TEXT_CHAT: {
+            if (*(ptr.get() + 2) != Message_Header::NOMEAN || *(ptr.get() + 4) != Message_Header::NOMEAN)
                 return false;
             break;
         }
-        case MessageHeader::TEXT_SYS: {
-            if ((*(ptr.get() + 2) != MessageHeader::INIT_SYS && *(ptr.get() + 2) != MessageHeader::ADD_USER &&
-                 *(ptr.get() + 2) != MessageHeader::TIME) || *(ptr.get() + 4) != MessageHeader::NOMEAN)
+        case Message_Header::TEXT_SYS: {
+            if ((*(ptr.get() + 2) != Message_Header::INIT_SYS && *(ptr.get() + 2) != Message_Header::ADD_USER &&
+                 *(ptr.get() + 2) != Message_Header::TIME) || *(ptr.get() + 4) != Message_Header::NOMEAN)
                 return false;
             break;
         }
@@ -273,8 +269,8 @@ bool Epoll_Reactor_Service::check_header(const std::shared_ptr<char[]> &ptr) {
     return true;
 }
 
-void Epoll_Reactor_Service::send_recall_message(const std::shared_ptr<Event> &ptr,
-                                                const std::shared_ptr<Message_Stream> &message) {
+void Epoll_Reactor_Service::send_recall_message(std::shared_ptr<Event> ptr,
+                                                std::shared_ptr<Message_Stream> message) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service send_recall_message" << std::endl;
 #endif
@@ -284,19 +280,19 @@ void Epoll_Reactor_Service::send_recall_message(const std::shared_ptr<Event> &pt
 
     // 改为发送状态
     ptr->set_event_status(EPOLLOUT | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::send_message, _epoll_reactor->_service, ptr);
+    ptr->set_function(Epoll_Reactor_Service::send_message, ptr);
     _epoll_reactor->epoll_add_event(ptr);
 }
 
-void Epoll_Reactor_Service::init_the_client(const std::shared_ptr<Event> &ptr,
-                                            const std::shared_ptr<Message_Stream> &message) {
+void Epoll_Reactor_Service::init_the_client(std::shared_ptr<Event> ptr,
+                                            std::shared_ptr<Message_Stream> message) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service init_the_client" << std::endl;
 #endif
     Message_Header_Analysis &analysis = message->analysis;
-    mg.set_level_options(MessageHeader::TEXT_SYS,
-                         MessageHeader::INIT_SYS,
-                         MessageHeader::NOMEAN);
+    mg.set_level_options(Message_Header::TEXT_SYS,
+                         Message_Header::INIT_SYS,
+                         Message_Header::NOMEAN);
     // 发送的消息的目的地就是来源地
     mg.set_target_user_uuid(analysis.get_source_uuid());
     mg.set_content("ok", false);
@@ -328,18 +324,18 @@ void Epoll_Reactor_Service::init_the_client(const std::shared_ptr<Event> &ptr,
 
     // 改为发送状态
     ptr->set_event_status(EPOLLOUT | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::send_message, _epoll_reactor->_service, ptr);
+    ptr->set_function(Epoll_Reactor_Service::send_message, ptr);
     _epoll_reactor->epoll_add_event(ptr);
 }
 
-void Epoll_Reactor_Service::send_user_key(const std::shared_ptr<Event> &ptr,
-                                          const std::shared_ptr<Message_Stream> &message) {
+void Epoll_Reactor_Service::send_user_key(std::shared_ptr<Event> ptr,
+                                          std::shared_ptr<Message_Stream> message) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service send_user_key" << std::endl;
 #endif
     Message_Header_Analysis &analysis = message->analysis;
     // 请求的uuid
-    std::string uuid(37, '\0');
+    std::string uuid(36, '\0');
     for (int i = 0; i < 37; i++) {
         uuid[i] = static_cast<char>(message->get_content()[i]);
     }
@@ -355,9 +351,9 @@ void Epoll_Reactor_Service::send_user_key(const std::shared_ptr<Event> &ptr,
         // 找到了
         content += " " + _epoll_reactor->u_m->get_key_content(target_user->get_pub_path());
     }
-    mg.set_level_options(MessageHeader::TEXT_SYS,
-                         MessageHeader::ADD_USER,
-                         MessageHeader::NOMEAN);
+    mg.set_level_options(Message_Header::TEXT_SYS,
+                         Message_Header::ADD_USER,
+                         Message_Header::NOMEAN);
     // 发送的目的地就是来源地
     mg.set_target_user_uuid(analysis.get_source_uuid());
     mg.set_content(content, false);
@@ -381,12 +377,12 @@ void Epoll_Reactor_Service::send_user_key(const std::shared_ptr<Event> &ptr,
 
     // 改为发送状态
     ptr->set_event_status(EPOLLOUT | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::send_message, _epoll_reactor->_service, ptr);
+    ptr->set_function(Epoll_Reactor_Service::send_message, ptr);
     _epoll_reactor->epoll_add_event(ptr);
 }
 
-void Epoll_Reactor_Service::send_time_message(const std::shared_ptr<Event> &ptr,
-                                              const std::shared_ptr<Message_Stream> &message) {
+void Epoll_Reactor_Service::send_time_message(std::shared_ptr<Event> ptr,
+                                              std::shared_ptr<Message_Stream> message) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service send_time_message" << std::endl;
 #endif
@@ -394,8 +390,8 @@ void Epoll_Reactor_Service::send_time_message(const std::shared_ptr<Event> &ptr,
     send_recall_message(ptr, message);
 }
 
-bool Epoll_Reactor_Service::redirect_the_message(const std::shared_ptr<Event> &ptr,
-                                                 const std::shared_ptr<Message_Stream> &message) {
+bool Epoll_Reactor_Service::redirect_the_message(std::shared_ptr<Event> ptr,
+                                                 std::shared_ptr<Message_Stream> message) {
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service redirect_the_message" << std::endl;
 #endif
@@ -405,83 +401,88 @@ bool Epoll_Reactor_Service::redirect_the_message(const std::shared_ptr<Event> &p
         return false;
     }
 
-    std::shared_ptr<Event> target_user = *_epoll_reactor->_user_store[analysis.get_target_uuid()];
+    std::shared_ptr<Event> target_user = _epoll_reactor->_user_store[analysis.get_target_uuid()];
 
-    auto buf = target_user->get_message_buf();
+    try {
+        // 测试当前的用户
+        target_user->get_socket_fd();
+    } catch (...) {
+
+    }
+
+    std::shared_ptr<Event_Buf> buf = target_user->get_message_buf();
     buf->push_send_message(message);
 
     // 自己继续监听，目标用户更改状态
     ptr->set_event_status(EPOLLIN | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::receive_message, _epoll_reactor->_service, ptr);
+    ptr->set_function(Epoll_Reactor_Service::receive_message, ptr);
     _epoll_reactor->epoll_add_event(ptr);
-
     // 删除在监听树中的目标
     _epoll_reactor->epoll_erase_event(target_user);
     // 更改目标的监听状态
     target_user->set_event_status(EPOLLOUT | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::send_message, _epoll_reactor->_service, target_user);
+    target_user->set_function(Epoll_Reactor_Service::send_message, target_user);
     // 添加回去
     _epoll_reactor->epoll_add_event(target_user);
     return true;
 }
 
-void Epoll_Reactor_Service::send_message(const std::shared_ptr<Event> &ptr) {
+void Epoll_Reactor_Service::send_message(std::shared_ptr<Event> ptr) {
 #ifdef DEBUG_EPOLL
-    std::cerr << "Epoll_Reactor_Service send message" << std::endl;
+    std::cerr << "Epoll_Reactor_Service send message fd: " << ptr->get_socket_fd() << std::endl;
 #endif
-
-    std::cerr << "start to send" << std::endl;
-
     std::shared_ptr<Event_Buf> buf = ptr->get_message_buf();
 
-    std::shared_ptr<Message_Stream> message = buf->get_next_send_message();
+    // 只要有数据，就一直发送
+    while (buf->get_send_buf_size()) {
+        std::shared_ptr<Message_Stream> message = buf->get_next_send_message();
 
 #ifdef DEBUG_EPOLL
-    std::cerr << "-----------------------------------------------------------" << std::endl;
-    std::cerr << "Epoll_Reactor_Service send message header len:" << message->get_header_len()
-              << " header: ";
-    write(STDERR_FILENO, std::reinterpret_pointer_cast<unsigned char[]>(message->get_header()).get(),
-          message->get_header_len());
-    std::cout << std::endl;
+        std::cerr << "-----------------------------------------------------------" << std::endl;
+        std::cerr << "Epoll_Reactor_Service send message header len:" << message->get_header_len()
+                  << " header: ";
+        write(STDERR_FILENO, std::reinterpret_pointer_cast<unsigned char[]>(message->get_header()).get(),
+              message->get_header_len());
+        std::cout << std::endl;
 #endif
 
 #ifdef DEBUG_EPOLL
-    std::cerr << "Epoll_Reactor_Service send message content len:" << message->get_content_len()
-              << " content: ";
-    write(STDERR_FILENO, message->get_content().get(), message->get_content_len());
-    std::cout << std::endl;
-    std::cerr << "-----------------------------------------------------------" << std::endl;
+        std::cerr << "Epoll_Reactor_Service send message content len:" << message->get_content_len()
+                  << " content: ";
+        write(STDERR_FILENO, message->get_content().get(), message->get_content_len());
+        std::cout << std::endl;
+        std::cerr << "-----------------------------------------------------------" << std::endl;
 #endif
-    auto sender = ptr->get_sender();
-    // 发送头文件的内容
-    if (sender->send_message(std::reinterpret_pointer_cast<unsigned char[]>(message->get_header()),
-                             message->get_header_len()) <= 0) {
+        auto sender = ptr->get_sender();
+        // 发送头文件的内容
+        if (sender->send_message(std::reinterpret_pointer_cast<unsigned char[]>(message->get_header()),
+                                 message->get_header_len()) <= 0) {
 #ifdef DEBUG_EPOLL
-        std::cerr << "Epoll_Reactor_Service send message header error " << std::endl;
+            std::cerr << "Epoll_Reactor_Service send message header error " << std::endl;
 #endif
-        _epoll_reactor->epoll_erase_event(ptr);
-        _epoll_reactor->disconnect(ptr);
-        _epoll_reactor->store_remove_event(ptr);
-    }
+            _epoll_reactor->epoll_erase_event(ptr);
+            _epoll_reactor->disconnect(ptr);
+            _epoll_reactor->store_remove_event(ptr);
+        }
 
-    // 发送数据的内容
-    if (sender->send_message(message->get_content(),
-                             message->get_content_len()) <= 0) {
+        // 发送数据的内容
+        if (sender->send_message(message->get_content(),
+                                 message->get_content_len()) <= 0) {
 #ifdef DEBUG_EPOLL
-        std::cerr << "Epoll_Reactor_Service send message content error " << std::endl;
+            std::cerr << "Epoll_Reactor_Service send message content error " << std::endl;
 #endif
-        _epoll_reactor->epoll_erase_event(ptr);
-        _epoll_reactor->disconnect(ptr);
-        _epoll_reactor->store_remove_event(ptr);
+            _epoll_reactor->epoll_erase_event(ptr);
+            _epoll_reactor->disconnect(ptr);
+            _epoll_reactor->store_remove_event(ptr);
+        }
     }
 
     _epoll_reactor->epoll_erase_event(ptr);
     ptr->set_event_status(EPOLLIN | EPOLLET);
-    ptr->set_function(&Epoll_Reactor_Service::receive_message, _epoll_reactor->_service, ptr);
+    ptr->set_function(Epoll_Reactor_Service::receive_message, ptr);
     _epoll_reactor->epoll_add_event(ptr);
 
 #ifdef DEBUG_EPOLL
     std::cerr << "Epoll_Reactor_Service end send message" << std::endl;
 #endif
-    std::cerr << "end to send" << std::endl;
 }

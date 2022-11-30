@@ -1,7 +1,7 @@
 #pragma once
 #include "stdinc.h"
 #include "Log.h"
-#include "FileManager.h"
+#include "File_Manager.h"
 #include "Default.h"
 #include "Setting.h"
 /*
@@ -38,9 +38,9 @@ private:
     void reload(const std::string& lang = "zh_CN");
     // 存取模块
     // WriteWithLine _writeLine;
-    std::shared_ptr<nlohmann::json> _json_ptr;
+    nlohmann::json _json_ptr;
     // 读取 json 文件
-    ReadJson _read_json;
+    Read_Json _read_json;
     // 是否以及被初始化过
     bool is_inited = false;
     std::shared_ptr<Log> log;

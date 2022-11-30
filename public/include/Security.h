@@ -1,7 +1,7 @@
 #pragma once
 #include "stdinc.h"
 #include "Log.h"
-#include "FileManager.h"
+#include "File_Manager.h"
 #include "Language.h"
 
 class Language;
@@ -78,6 +78,9 @@ public:
      */
     virtual bool convert() = 0;
 
+    /*
+     * 获取密钥支持的长度
+     */
     virtual size_t size() = 0;
 
     // 获取错误信息

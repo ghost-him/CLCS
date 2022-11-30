@@ -7,7 +7,7 @@
 #include "Message.h"
 #include "Event.h"
 #include "Epoll_Reactor_Service.h"
-#include "ThreadPool.h"
+#include "Thread_Pool.h"
 
 
 
@@ -40,25 +40,29 @@ public :
     /*
      * 向存储器中添加事件
      */
-    void store_add_event(const std::shared_ptr<Event> &);
+    void store_add_event(std::shared_ptr<Event>);
     /*
      * 从存储器中删除事件
      */
-    void store_remove_event(const std::shared_ptr<Event> &);
+    void store_remove_event(std::shared_ptr<Event>);
 
     /*
      * 向监听树中添加事件
      */
-    void epoll_add_event(const std::shared_ptr<Event> &);
+    void epoll_add_event(std::shared_ptr<Event>);
     /*
      * 从监听树中删除事件
      */
-    void epoll_erase_event(const std::shared_ptr<Event> &);
+    void epoll_erase_event(std::shared_ptr<Event>);
+    /*
+     * 刷新事件
+     */
+    void epoll_flush_event(std::shared_ptr<Event>);
 
     /*
      * 与指定的断开连接
      */
-    void disconnect(const std::shared_ptr<Event>&);
+    void disconnect(std::shared_ptr<Event>);
 
     /*
      * 开始监听事件
@@ -72,14 +76,14 @@ private:
     // 单例模式
     static std::shared_ptr<Epoll_Reactor> _ptr;
     // 事件集合
-    std::list<std::shared_ptr<Event>> _event_store;
+    std::set<std::shared_ptr<Event>> _event_store;
     // 自己的服务类
     std::shared_ptr<Epoll_Reactor_Service> _service;
 
     // 存储用户的信息
     std::shared_ptr<User_Manager> u_m;
     // 通过uuid 来查找指定的事件在监听树中的位置
-    std::map<std::string, std::list<std::shared_ptr<Event>>::iterator> _user_store;
+    std::map<std::string, std::shared_ptr<Event>> _user_store;
 
     /*
      * epoll reactor自己的属性
@@ -90,6 +94,8 @@ private:
     int MAX_EVENT;
     // 运行时产生的数组
     std::shared_ptr<epoll_event[]> _run_events;
+    // epoll reactor 的锁， 在操作添加，减少等操作时，会将数据结构锁住
+    std::mutex _data_structure_lock;
 
     /*
      * tcp连接属性
@@ -118,8 +124,8 @@ private:
      * 辅助函数
      */
 
-    // 当有新的连接进来的时候，将这个连接的用户添加到记录中
-    bool  add_user(const std::shared_ptr<Event>&, const std::shared_ptr<Message_Stream>&);
+    // 当有新地连接进来的时候，将这个连接的用户添加到记录中
+    bool  add_user(std::shared_ptr<Event>, std::shared_ptr<Message_Stream>);
 
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "stdinc.h"
-#include "FileManager.h"
+#include "File_Manager.h"
 #include "Default.h"
 #include "Log.h"
 #include "Security.h"
@@ -31,12 +31,12 @@ public:
 private:
     Setting();
     static std::shared_ptr<Setting> _ptr;
-    static std::shared_ptr<nlohmann::json> _json;
-    static std::shared_ptr<FileManager> _FileManager;
+    static nlohmann::json _json;
+    static std::shared_ptr<File_Manager> _FileManager;
     // static ReadWithLine _readFile;
-    static ReadJson _read_json;
+    static Read_Json _read_json;
     // static WriteWithLine _writeFile;
-    static WriteJson _write_json;
+    static Write_Json _write_json;
     static std::shared_ptr<Log> log;
 };
 

@@ -1,65 +1,65 @@
-#include "ThreadPool.h"
+#include "Thread_Pool.h"
 
 // 初始化静态变量
-std::shared_ptr<ThreadPool> ThreadPool::_ptr(new ThreadPool());
-threadPool_t ThreadPool::self;
-std::deque<Task> ThreadPool::_task_deque;
-std::set<pthread_t> ThreadPool::_thread_id;
-std::shared_ptr<Log> ThreadPool::log = nullptr;
-std::shared_ptr<Setting> ThreadPool::setting = nullptr;
-std::shared_ptr<Language> ThreadPool::lang = nullptr;
+std::shared_ptr<Thread_Pool> Thread_Pool::_ptr(new Thread_Pool());
+threadPool_t Thread_Pool::self;
+std::deque<Task> Thread_Pool::_task_deque;
+std::set<pthread_t> Thread_Pool::_thread_id;
+std::shared_ptr<Log> Thread_Pool::log = nullptr;
+std::shared_ptr<Setting> Thread_Pool::setting = nullptr;
+std::shared_ptr<Language> Thread_Pool::lang = nullptr;
 
-void ThreadPool::set_max_thread(int num) {
+void Thread_Pool::set_max_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._max_number = num;
     (*setting)["threadpool_max_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
-void ThreadPool::set_min_thread(int num) {
+void Thread_Pool::set_min_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._min_number = num;
     (*setting)["threadpool_min_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
-void ThreadPool::set_grow_thread(int num) {
+void Thread_Pool::set_grow_thread(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._grow_number = num;
     (*setting)["threadpool_grow_thread"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
-void ThreadPool::set_check_time(int num) {
+void Thread_Pool::set_check_time(int num) {
     pthread_mutex_lock(&self._struct_lock);
     self._check_per_time = num;
     (*setting)["threadpool_set_check_time"] = std::to_string(num);
     pthread_mutex_unlock(&self._struct_lock);
 }
 
-unsigned int ThreadPool::get_max_thread() {
+unsigned int Thread_Pool::get_max_thread() {
     return self._max_number;
 }
-unsigned int ThreadPool::get_min_thread() {
+unsigned int Thread_Pool::get_min_thread() {
     return self._min_number;
 }
-unsigned int ThreadPool::get_grow_thread() {
+unsigned int Thread_Pool::get_grow_thread() {
     return self._grow_number;
 }
-unsigned int ThreadPool::get_check_time() {
+unsigned int Thread_Pool::get_check_time() {
     return self._check_per_time;
 }
-unsigned int ThreadPool::get_working_thread() {
+unsigned int Thread_Pool::get_working_thread() {
     return self._working_thread;
 }
 
 
-ThreadPool::ThreadPool() {
+Thread_Pool::Thread_Pool() {
 
 }
 
-std::shared_ptr<ThreadPool> ThreadPool::ptr() {
+std::shared_ptr<Thread_Pool> Thread_Pool::ptr() {
     return _ptr;
 }
 
-void ThreadPool::startInit() {
+void Thread_Pool::startInit() {
     log = Log::ptr();
     lang = Language::ptr();
     setting = Setting::ptr();
@@ -73,7 +73,7 @@ void ThreadPool::startInit() {
     self._check_per_time = std::stoi((*setting)["threadpool_set_check_time"]);
 }
 
-void ThreadPool::startThreadPool() {
+void Thread_Pool::startThreadPool() {
     log->log((*lang)["threadPool_start_running"]);
     self._is_closed = false;
     // 初始化普通线程， 要留一个线程给守护线程
@@ -100,7 +100,7 @@ void ThreadPool::startThreadPool() {
 
 }
 
-ThreadPool::~ThreadPool() {
+Thread_Pool::~Thread_Pool() {
 #ifdef DEBUG_THREAD_POOL
     std::cerr << "start end threadpool" << std::endl;
 #endif
@@ -124,7 +124,7 @@ ThreadPool::~ThreadPool() {
 }
 
 
-void* ThreadPool::thread_work(void * arg) {
+void* Thread_Pool::thread_work(void * arg) {
     bool is_keep = false;
     Task task;
     while (true) {
@@ -186,7 +186,7 @@ void* ThreadPool::thread_work(void * arg) {
     }
 }
 
-void* ThreadPool::daemon_thread(void * arg) {
+void* Thread_Pool::daemon_thread(void * arg) {
     while (!self._is_closed) {
         pthread_mutex_lock(&self._thread_counter);
         auto busy_thread = self._working_thread;
@@ -203,7 +203,7 @@ void* ThreadPool::daemon_thread(void * arg) {
     pthread_exit(nullptr);
 }
 
-void ThreadPool::add_thread() {
+void Thread_Pool::add_thread() {
     pthread_mutex_lock(&self._struct_lock);
     // 当数量在允许的范围之内的时候
     if (self._total_thread + self._grow_number <= self._max_number) {
@@ -221,7 +221,7 @@ void ThreadPool::add_thread() {
     pthread_mutex_unlock(&self._struct_lock);
 }
 
-void ThreadPool::mis_thread() {
+void Thread_Pool::mis_thread() {
     pthread_mutex_lock(&self._struct_lock);
     if (self._total_thread - self._grow_number >= self._min_number) {
         self._deleted_number = self._grow_number;

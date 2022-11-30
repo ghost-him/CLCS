@@ -20,7 +20,7 @@ public:
     unsigned int _deleted_number = 0;       // 即将被删除的线程的数量
 
     unsigned int _working_thread = 1;       // 正在工作的线程
-    unsigned int _total_thread = 0;         // 总线程
+    unsigned int _total_thread = 0;         // 总线程数
 
     pthread_t _daemon_thread = 0;           // 守护线程的id
 
@@ -48,11 +48,11 @@ public:
 
 
 
-class ThreadPool final {
+class Thread_Pool final {
 public:
-    ~ThreadPool();
+    ~Thread_Pool();
 
-    static std::shared_ptr<ThreadPool> ptr();
+    static std::shared_ptr<Thread_Pool> ptr();
 
     static void startInit();
 
@@ -60,7 +60,7 @@ public:
 
     template<class Func, class ...Args> // 添加任务
     static void commit(TaskLevel::Level level, Func&& function, Args&&... args) {
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         std::cerr << "commited task:" << function << std::endl;
 #endif
         auto task_func = std::bind(std::forward<Func>(function), std::forward<Args>(args)...);
@@ -87,11 +87,11 @@ public:
     static unsigned int get_working_thread();   // 获取当前正在工作的线程的数量
 
 private:
-    static std::shared_ptr<ThreadPool> _ptr;
+    static std::shared_ptr<Thread_Pool> _ptr;
 
 
     static threadPool_t self;
-    ThreadPool();
+    Thread_Pool();
 
 
     // 普通线程做的任务

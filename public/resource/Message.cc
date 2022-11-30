@@ -1,12 +1,12 @@
 #include "Message.h"
 
-MessageGenerator::MessageGenerator()
-    :_level(MessageHeader::RECALL), _para1(MessageHeader::NOMEAN), _para2(MessageHeader::NOMEAN){
+Message_Generator::Message_Generator()
+    : _level(Message_Header::RECALL), _para1(Message_Header::NOMEAN), _para2(Message_Header::NOMEAN){
     _len = 0;
     _max_len = 0;
 }
 
-void MessageGenerator::startInit() {
+void Message_Generator::startInit() {
     log = Log::ptr();
     lang = Language::ptr();
     setting = Setting::ptr();
@@ -14,51 +14,51 @@ void MessageGenerator::startInit() {
     enc.startInit();
 }
 
-void MessageGenerator::set_level_options(MessageHeader::Level level, MessageHeader::Option para1, MessageHeader::Option para2) {
+void Message_Generator::set_level_options(Message_Header::Level level, Message_Header::Option para1, Message_Header::Option para2) {
     _level = level;
     _para1 = para1;
     _para2 = para2;
 }
 
 
-void MessageGenerator::set_level(MessageHeader::Level level) {
+void Message_Generator::set_level(Message_Header::Level level) {
     _level = level;
 }
 
-MessageHeader::Level MessageGenerator::get_level() {
+Message_Header::Level Message_Generator::get_level() {
     return _level;
 }
 
-void MessageGenerator::set_option(MessageHeader::Option para1, MessageHeader::Option para2) {
+void Message_Generator::set_option(Message_Header::Option para1, Message_Header::Option para2) {
     _para1 = para1;
     _para2 = para2;
 }
 
-MessageHeader::Option MessageGenerator::get_para1() const {
+Message_Header::Option Message_Generator::get_para1() const {
     return _para1;
 }
 
-MessageHeader::Option MessageGenerator::get_para2() const {
+Message_Header::Option Message_Generator::get_para2() const {
     return _para2;
 }
 
-void MessageGenerator::set_target_user_uuid(const std::string& uuid) {
+void Message_Generator::set_target_user_uuid(const std::string& uuid) {
     _target_user_uuid = uuid;
     enc.init();
     if (!enc.set_and_read_key(u_m->get_pub_key_path(uuid))) {
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         std::cerr << "set target user uuid: " << uuid << std::endl;
 #endif
-        log->log("[error] MessageGenerator: set and read key error: " + u_m->get_pub_key_path(uuid));
+        log->log("[error] Message_Generator: set and read key error: " + u_m->get_pub_key_path(uuid));
     }
 }
 
-std::string MessageGenerator::get_target_user_uuid() {
+std::string Message_Generator::get_target_user_uuid() {
     return _target_user_uuid;
 }
 
 
-const MessageGenerator & MessageGenerator::operator=(const MessageGenerator& t) {
+const Message_Generator & Message_Generator::operator=(const Message_Generator& t) {
     _buf = t._buf;
     _level = t._level;
     _para1 = t._para1;
@@ -71,7 +71,7 @@ const MessageGenerator & MessageGenerator::operator=(const MessageGenerator& t) 
 }
 
 
-bool MessageGenerator::set_content(const std::string& str, bool is_encrypt) {
+bool Message_Generator::set_content(const std::string& str, bool is_encrypt) {
     // 如果加密当前的内容
     if (is_encrypt) {
         int unit = enc.size();
@@ -93,8 +93,7 @@ bool MessageGenerator::set_content(const std::string& str, bool is_encrypt) {
         }
     } else {
         // 如果不加密
-        _len = str.size();
-        _buf.reset(new unsigned char[_len]);
+        set_content_len(str.size());
         memcpy(_buf.get(), str.c_str(), _len);
     }
     return true;
@@ -103,30 +102,30 @@ bool MessageGenerator::set_content(const std::string& str, bool is_encrypt) {
 // TODO 重写该函数
 // 读入消息， 然后计算加密以后的消息的长度
 /*
-MessageGenerator& MessageGenerator::operator = (const char * chars) {
+Message_Generator& Message_Generator::operator = (const char * chars) {
     std::string str = chars;
     set_content(str);
     return *this;
 }
  */
 
-MessageAnalysis::MessageAnalysis() {
+Message_Analysis::Message_Analysis() {
     _message_size = 0;
 }
 
-void MessageAnalysis::startInit() {
+void Message_Analysis::startInit() {
     u_m = User_Manager::ptr();
     // 设置解密的钥匙
     dec.startInit();
     dec.set_and_read_key(u_m->get_self_pri_path());
 }
 
-MessageAnalysis::operator const char *() {
+Message_Analysis::operator const char *() {
     return _content.c_str();
 }
 /*
-MessageAnalysis &MessageAnalysis::operator=(const std::string &str) {
-    MessageHeader::Level level;     // 获取选项
+Message_Analysis &Message_Analysis::operator=(const std::string &str) {
+    Message_Header::Level level;     // 获取选项
     std::string option;
     std::string content;
 
@@ -139,7 +138,7 @@ MessageAnalysis &MessageAnalysis::operator=(const std::string &str) {
 }
  */
 
-std::string MessageGenerator::get_header() {
+std::string Message_Generator::get_header() {
     /*
      *  1 1 1\n
      *  [uuid1] [uuid2]\n
@@ -162,15 +161,15 @@ std::string MessageGenerator::get_header() {
     return res;
 }
 
-std::shared_ptr<unsigned char[]> MessageGenerator::get_content() {
+std::shared_ptr<unsigned char[]> Message_Generator::get_content() {
     return _buf;
 }
 
-int MessageGenerator::get_content_size() {
+int Message_Generator::get_content_size() {
     return _len;
 }
 
-void MessageGenerator::set_content_len(int len) {
+void Message_Generator::set_content_len(int len) {
     if (_max_len < len) {
         _max_len = len;
         _buf = std::make_shared<unsigned char[]>(_max_len);
@@ -178,31 +177,31 @@ void MessageGenerator::set_content_len(int len) {
     _len = len;
 }
 
-MessageHeader::Level MessageAnalysis::get_level() {
+Message_Header::Level Message_Analysis::get_level() {
     return _level;
 }
 
-MessageHeader::Option MessageAnalysis::get_para1() {
+Message_Header::Option Message_Analysis::get_para1() {
     return _para1;
 }
-MessageHeader::Option MessageAnalysis::get_para2() {
+Message_Header::Option Message_Analysis::get_para2() {
     return _para2;
 }
 
-const std::string& MessageAnalysis::get_uuid1() const {
+const std::string& Message_Analysis::get_uuid1() const {
     return _uuid1;
 }
 
-const std::string& MessageAnalysis::get_uuid2() const {
+const std::string& Message_Analysis::get_uuid2() const {
     return _uuid2;
 }
 
-std::shared_ptr<unsigned char[]> MessageAnalysis::get_raw() {
+std::shared_ptr<unsigned char[]> Message_Analysis::get_raw() {
     return _raw;
 }
 
-const std::string& MessageAnalysis::get_content() {
-#ifdef DEBUG
+const std::string& Message_Analysis::get_content() {
+#ifdef DEBUG_MAIN
     std::cerr << "message analysis start decrypt the content" << std::endl;
 #endif
 
@@ -213,14 +212,14 @@ const std::string& MessageAnalysis::get_content() {
     // 清空代码
     _content.clear();
     // 如果是回调信息
-    if (_level != MessageHeader::TEXT_CHAT) {
+    if (_level != Message_Header::TEXT_CHAT) {
         _content.resize(_message_size + 1, '\0');
         for (int i = 0; i < _message_size; i++) {
             _content[i] = static_cast<char>(_raw.get()[i]);
         }
         return _content;
     }
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
     std::cerr << "message analysis user message" << " message length: " << _message_size << std::endl;
     std::cerr << "message analysis dec size:" << dec.size() << std::endl;
 #endif
@@ -242,12 +241,12 @@ const std::string& MessageAnalysis::get_content() {
         // 转换失败
         if (!dec.convert()) {
             _content.clear();
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
             std::cerr << "rsa_decrypt end convert failed" << std::endl;
 #endif
             return _content;
         }
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
         std::cerr << "rsa_decrypt end convert" << std::endl;
 #endif
         // 将转换好的字节块添加到文字后面
@@ -255,18 +254,18 @@ const std::string& MessageAnalysis::get_content() {
         // 读取下一个字节块
         block ++;
     }
-#ifdef DEBUG
+#ifdef DEBUG_MAIN
     std::cerr << "message analysis: content " <<  _content << std::endl;
 #endif
 
     return _content;
 }
 
-int MessageAnalysis::get_message_len() {
+int Message_Analysis::get_message_len() {
     return _message_size;
 }
 
-int MessageAnalysis::get_command(MessageReceiver* mr) {
+int Message_Analysis::get_command(Message_Receiver* mr) {
     // 读取头信息
     int ret;
     if ((ret = mr->read_header(), ret) <= 0)
@@ -315,21 +314,21 @@ int MessageAnalysis::get_command(MessageReceiver* mr) {
     return true;
 }
 
-bool MessageAnalysis::check_header(const char * header) {
+bool Message_Analysis::check_header(const char * header) {
     // 检查头标记的正确性
     switch (*header) {
-        case MessageHeader::RECALL: {
-            if (*(header + 2) != MessageHeader::NOMEAN || (*(header +4) != MessageHeader::NOMEAN))
+        case Message_Header::RECALL: {
+            if (*(header + 2) != Message_Header::NOMEAN || (*(header + 4) != Message_Header::NOMEAN))
                 return false;
             break;
         }
-        case MessageHeader::TEXT_CHAT: {
-            if (*(header + 2) != MessageHeader::NOMEAN || *(header + 4) != MessageHeader::NOMEAN)
+        case Message_Header::TEXT_CHAT: {
+            if (*(header + 2) != Message_Header::NOMEAN || *(header + 4) != Message_Header::NOMEAN)
                 return false;
             break;
         }
-        case MessageHeader::TEXT_SYS: {
-            if ((*(header + 2) != MessageHeader::INIT_SYS && *(header + 2) != MessageHeader::ADD_USER && *(header + 2) != MessageHeader::TIME) || *(header + 4) != MessageHeader::NOMEAN)
+        case Message_Header::TEXT_SYS: {
+            if ((*(header + 2) != Message_Header::INIT_SYS && *(header + 2) != Message_Header::ADD_USER && *(header + 2) != Message_Header::TIME) || *(header + 4) != Message_Header::NOMEAN)
                 return false;
             break;
         }
@@ -337,20 +336,20 @@ bool MessageAnalysis::check_header(const char * header) {
     return true;
 }
 
-void MessageReceiver::startInit() {
+void Message_Receiver::startInit() {
     log = Log::ptr();
     lang = Language::ptr();
 }
 
-const std::shared_ptr<char[]>& MessageReceiver::get_header() {
+const std::shared_ptr<char[]>& Message_Receiver::get_header() {
     return _header;
 }
 
-std::shared_ptr<unsigned char[]> MessageReceiver::get_content() {
+std::shared_ptr<unsigned char[]> Message_Receiver::get_content() {
     return _buf;
 }
 
-int MessageReceiver::read_header() {
+int Message_Receiver::read_header() {
 #ifdef DEBUG_INPUT
     std::cerr << "try to read _header" << std::endl;
 #endif
@@ -361,7 +360,7 @@ int MessageReceiver::read_header() {
         total_len ++;
         auto ret = read(_socket_fd, _header.get() + total_len, 1);
         if (ret < 0) {
-            log->log((std::string)"[error] MessageReceiver: read _header error: %e, last time read:" + _header.get());
+            log->log((std::string)"[error] Message_Receiver: read _header error: %e, last time read:" + _header.get());
             return -1;
         } else if (ret == 0) {
             log->log((*lang)["MessageReceiver_close_connect"]);
@@ -382,7 +381,7 @@ int MessageReceiver::read_header() {
     return _header_len;
 }
 
-int MessageReceiver::read_content() {
+int Message_Receiver::read_content() {
     // 读取内容
     if (!_is_content) {
         log->log((*lang)["MessageReceiver_read_content_error"]);
@@ -421,7 +420,7 @@ int MessageReceiver::read_content() {
     return ret;
 }
 
-void MessageReceiver::set_read_content_len(int len) {
+void Message_Receiver::set_read_content_len(int len) {
     // 设置要读的内容
     _is_content = true;
     // 如果当前的大小比输入的大时，则无需重新设置大小
@@ -435,15 +434,15 @@ void MessageReceiver::set_read_content_len(int len) {
     _content_len = len;
 }
 
-void MessageReceiver::set_fd(int fd) {
+void Message_Receiver::set_fd(int fd) {
     _socket_fd = fd;
 }
 
-int MessageReceiver::get_fd() const {
+int Message_Receiver::get_fd() const {
     return _socket_fd;
 }
 
-MessageReceiver::MessageReceiver() {
+Message_Receiver::Message_Receiver() {
     _header = std::make_shared<char[]>(BUFSIZ);
     _header_len = 0;
     _socket_fd = 0;

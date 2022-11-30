@@ -8,7 +8,7 @@
  * 会自动识别注释等
  */
 
-class ReadFile {
+class Read_File {
 public:
     /*
      * 设置文件的路径
@@ -38,25 +38,25 @@ protected:
  * 获取当前json文件的指针
  */
 
-class ReadJson : public ReadFile {
+class Read_Json : public Read_File {
 public :
     void read_json();
-    void set_json_ptr(const std::shared_ptr<nlohmann::json>&);
+    void set_json_ptr(nlohmann::json*);
 private:
     // nlohmann::json* _json;
-    std::shared_ptr<nlohmann::json> _json;
+    nlohmann::json* _json;
 };
 
 /* TODO 完成此函数
  * 读取一个用户
  */
-class ReadUser : public ReadFile {
+class Read_User : public Read_File {
 public:
     // 用户信息， 当前的信息是否有效
     std::pair<User, bool> read_user_message(std::string&&);
 };
 
-class WriteFile {
+class Write_File {
 public:
     /*
      * 设置文件的路径
@@ -80,26 +80,26 @@ protected:
     bool _is_exist_error = false;
 };
 
-class WriteJson : public WriteFile {
+class Write_Json : public Write_File {
 public:
-    void set_json_to_write(const std::shared_ptr<nlohmann::json>& json_ptr);
+    void set_json_to_write(nlohmann::json*);
     void write_json();
 private:
-    std::shared_ptr<nlohmann::json> _json_ptr;
+    nlohmann::json* _json_ptr;
 };
 
 
 /* TODO 完成此函数
  * 存放用户
  */
-class WriteUser : public WriteFile {
+class Write_User : public Write_File {
 public:
     bool write_file(std::map<std::string, User>&);
 private:
     static std::string get_user_message(User&);
 };
 
-class CreateFile {
+class Create_File {
 public:
     // 设置目标路径
     void set_target_path(const std::string & path);
@@ -111,14 +111,14 @@ protected:
     std::string _file_path;
 };
 
-class CreateJson : public CreateFile {
+class Create_Json : public Create_File {
 public :
     // 创建目标json
     void create_target() override;
     // 设置要创建的json
-    void set_json(const std::shared_ptr<nlohmann::json>& json);
+    void set_json(nlohmann::json *json);
 private:
-    std::shared_ptr<nlohmann::json> _json;
+    nlohmann::json* _json;
 
 };
 
@@ -127,10 +127,10 @@ private:
  * 用于管理文件路径
  */
 
-class FileManager {
+class File_Manager {
     friend class Init;
 public:
-    static std::shared_ptr<FileManager> ptr();
+    static std::shared_ptr<File_Manager> ptr();
     /*
      * 提取输入的字符串对应的字符串
      * 若找不到，则返回默认的路径
@@ -138,9 +138,9 @@ public:
     std::string& get(const std::string&);
 
 private:
-    static std::shared_ptr<FileManager> _ptr;
+    static std::shared_ptr<File_Manager> _ptr;
 
-    FileManager();
+    File_Manager();
 
     std::unordered_map<std::string, std::string> _dir_path;
 };

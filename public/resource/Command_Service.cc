@@ -47,7 +47,12 @@ void Service::set_format(std::string && str) {
 
 // 分析当前的参数
 void Command_Service::update(const std::vector<std::string>& command) {
-    if (_group.count(command[0]) != 0) {
+    if (command.empty()) {
+        alert();
+        return ;
+    }
+
+    if ( _group.count(command[0]) != 0) {
         // 检查当前的命令是否存在
         auto com = get(command[0]);
         if (com == nullptr) { // 不存在
@@ -100,28 +105,26 @@ void Command_Service::set_group_param(std::string && command) {
 void Command_Service::help() {
     for (auto i : _store) {
         help(i.second, 0);
-        std::cout << "\n";
     }
 }
 
 void Command_Service::help(const Service& now, int level) {
-    std::string out;
+    std::string out_string;
 
-    for (int i = 0; i < level; i++) out.push_back('\t');
-    out += now.name;
-    out.push_back('\n');
+    for (int i = 0; i < level; i++) out_string.push_back('\t');
+    out_string += now.name;
+    out_string.push_back('\n');
 
-    for (int i = 0; i < level + 1; i++) out.push_back('\t');
-    out += now.description;
-    out.push_back('\n');
+    for (int i = 0; i < level + 1; i++) out_string.push_back('\t');
+    out_string += now.description;
+    out_string.push_back('\n');
 
     if (!now.format.empty()) {
-        for (int i = 0; i < level + 1; i++) out.push_back('\t');
-        out += now.format;
-        out.push_back('\n');
+        for (int i = 0; i < level + 1; i++) out_string.push_back('\t');
+        out_string += now.format;
+        out_string.push_back('\n');
     }
-
-    std::cout << out;
+    OUT << out_string;
     for (auto i : now._store) {
         help(i.second, level + 1);
     }

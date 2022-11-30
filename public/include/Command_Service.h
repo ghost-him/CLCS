@@ -17,20 +17,21 @@ public:
 
     // 运行当前的函数
     bool operator()(const std::vector<std::string>&);
-
+    // 设置绑定的函数
     void operator=(const std::function<void(const std::vector<std::string>&)> &);
-
     // 有内容则表示返回成功
-    // 设置函数
+    // 设置子命令
     Service& set(const std::string&, std::string&&);
-    // 获取函数
+    // 获取子命令
     Service* get(const std::string&);
 
+    // 绑定的函数
     std::function<void(const std::vector<std::string>&)> _function;
 
+    // 设置自己的执行格式的说明
     void set_format(std::string &&);
 
-    // 储存
+    // 子函数储存，通过名字来获取并访问
     std::map<std::string, Service> _store;
 
     // 当前命令的描述
@@ -39,7 +40,7 @@ public:
     std::string name;
     // 当前命令的格式
     std::string format;
-
+    // 是否设置了函数
     bool _is_set = false;
 };
 
@@ -56,7 +57,7 @@ public:
     // 设置函数
     Service& set(const std::string&, std::string&&);
     Service* get(const std::string&);
-
+    // 设置输入的命令为一个组命令
     void set_group_param(std::string &&);
 private:
     void help(const Service&, int);

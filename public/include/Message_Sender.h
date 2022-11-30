@@ -5,7 +5,7 @@
  * 负责将数据发送给服务器
  */
 
-class MessageSender {
+class Message_Sender {
 public:
     /*
      * 初始化
@@ -24,7 +24,7 @@ public:
     virtual int send_message(std::shared_ptr<unsigned char[]>, int);
 
 protected:
-    MessageSender();
+    Message_Sender();
     // 目标服务器的文件描述符
     int _socket_fd;
     std::shared_ptr<Log> log ;
@@ -33,7 +33,7 @@ protected:
     std::mutex _sender;
 };
 
-class Client_Message_Sender : public MessageSender{
+class Client_Message_Sender : public Message_Sender{
 public:
     /*
     * 返回唯一的实例
@@ -45,7 +45,7 @@ private:
     Client_Message_Sender(){}
 };
 
-class Server_Message_Sender : public MessageSender {
+class Server_Message_Sender : public Message_Sender {
 public:
     Server_Message_Sender(){}
     int send_message(const std::string&) override;

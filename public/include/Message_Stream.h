@@ -34,6 +34,9 @@ public:
      */
     std::shared_ptr<unsigned char[]> get_content();
 
+    /*
+     * 获取自身的一个拷贝
+     */
     std::shared_ptr<Message_Stream> copy();
 
     /*

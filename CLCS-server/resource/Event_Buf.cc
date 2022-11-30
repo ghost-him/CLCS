@@ -10,7 +10,7 @@ void Event_Buf::push_receive_message(const Message_Stream& messageStream) {
     push_receive_message(ptr);
 }
 
-void Event_Buf::push_receive_message(const std::shared_ptr<Message_Stream>& ptr) {
+void Event_Buf::push_receive_message(std::shared_ptr<Message_Stream> ptr) {
     receive_message.push_back(ptr);
 }
 
@@ -20,7 +20,16 @@ void Event_Buf::push_send_message(const Message_Stream& messageStream) {
     push_send_message(ptr);
 }
 
-void Event_Buf::push_send_message(const std::shared_ptr<Message_Stream>& ptr) {
+size_t Event_Buf::get_receive_buf_size() {
+    return receive_message.size();
+}
+
+size_t Event_Buf::get_send_buf_size() {
+    return send_message.size();
+}
+
+
+void Event_Buf::push_send_message(std::shared_ptr<Message_Stream> ptr) {
     send_message.push_back(ptr);
 }
 

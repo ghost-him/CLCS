@@ -17,13 +17,13 @@ void User_Manager::Init_User_Manager() {
      */
     setting = Setting::ptr();
     log = Log::ptr();
-    fm = FileManager::ptr();
+    fm = File_Manager::ptr();
     self.set_pub_path((*setting)["pub_key_path"]);
     self.set_pri_path((*setting)["pri_key_path"]);
     self.set_uuid((*setting)["uuid"]);
 
     // 读取用户信息
-    ReadUser ru;
+    Read_User ru;
     std::string file_path = (*fm).get("option") + "user.txt";
     std::ifstream ifs;
     if (access(file_path.c_str(), F_OK) == -1) {
@@ -39,7 +39,7 @@ void User_Manager::Init_User_Manager() {
 
     ifs.open(file_path, std::ios::in);
     if (!ifs.is_open()) {
-        log->log("[error] ReadUser: can not open target file: " + file_path);
+        log->log("[error] Read_User: can not open target file: " + file_path);
         return;
     }
 
@@ -50,7 +50,7 @@ void User_Manager::Init_User_Manager() {
         std::getline(ifs, user_message);
         user = std::move(ru.read_user_message(std::move(user_message)));
         if (!user.second) {
-            log->log("[warn] ReadUser: invalid user message");
+            log->log("[warn] Read_User: invalid user message");
             continue;
         }
         // 添加用户
@@ -162,7 +162,7 @@ const std::map<std::string, User>& User_Manager::get_database() {
 }
 
 void User_Manager::save() {
-    WriteUser wf;
+    Write_User wf;
     wf.setFilePath((*fm).get("option") + "user.txt");
     wf.write_file(_user_store);
 }

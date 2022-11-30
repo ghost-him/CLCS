@@ -35,6 +35,14 @@ bool Event::get_is_content() {
     return _is_content;
 }
 
+void Event::set_uuid(const std::string & uuid) {
+    _uuid = uuid;
+}
+// 获取自己的uuid
+std::string Event::get_uuid() {
+    return _uuid;
+}
+
 std::shared_ptr<Message_Stream> Event::get_temp_message() {
     return _temp_message;
 }
@@ -43,14 +51,6 @@ void Event::execute() {
     lock.lock();
     _function();
     lock.unlock();
-}
-
-void Event::set_location(std::list<std::shared_ptr<Event>>::iterator&& location) {
-    _location = std::move(location);
-}
-
-std::list<std::shared_ptr<Event>>::iterator Event::get_location() {
-    return _location;
 }
 
 std::shared_ptr<Event> Event::get_self() {

@@ -14,7 +14,7 @@
 
   * 服务器：初代epoll模块
   * 客户端：网络连接器
-  
+
 * 文件管理模块
 * 文件存取读取模块
 * 数据处理模块
@@ -83,7 +83,7 @@
 1. 优化键值对的读取方式，改用`json`存储并读取键值对
 2. 优化了`setting`类的存取方式
 3. 优化了`language`类的存取方式，改进了语言的搜索方式
-4. 重写了`FileManager`类的存取方式
+4. 重写了`File_Manager`类的存取方式
 5. 改进了`default`类，将哈希表转为`json`
 6. 改进了`security`的类，将`openssl`的`api`转换为新的`api`,精简了代码
 7. 修改相应的技术文档
@@ -103,21 +103,38 @@
 
 ## V0.5.0
 
+**2022/12/1完成**
+
+* 改进的`epoll_reactor`
+
+* 基础的界面控制系统
+
+  
+
 1. 更改单例模式的实现方式，使得外部类无法直接获取变量
 2. 修改大部分指针为智能指针
    1. `Command_Analysis`类
-   2. `CreateJson`类，`WriteJson`类，`ReadJson`类
+   2. `Create_Json`类，`Write_Json`类，`Read_Json`类
    3. `Language`类
    4. `Log`类
    5. `Message`一族
    6. `Security`一族
    7. `Setting`类
-   8. `ThreadPool`类
+   8. `Thread_Pool`类
    9. `User_Manager`类
    10. `Business`,`Epoll_Reactor`,`Personalization`类等
 3. 修改了`Message_Process`类的实现细节，节省了内存的开销，提高了性能
-4. 修改了`MessageSender`的设计模式，改为了单例模式
+4. 修改了`Message_Sender`的设计模式，改为了单例模式
 5. 修复了服务端`epoll_reactor`的一个潜在的bug（listen死循环 ）
 6. 修复了客户端在结束通信时退出异常的错误
-7. 优化了`MessageSender`类，分为了服务端和客户端。服务端可以有多个，客户端只能有1个
+7. 优化了`Message_Sender`类，分为了服务端和客户端。服务端可以有多个，客户端只能有1个
 8. 更改了客户端和服务端的断开连接的方式
+9. 修复了客户端在读取命令时，若无正确命令则报错的bug，错误命令演示：`swdf"`
+10. 添加了界面控制类， 会在每行的前面添加 `CLCS > `符号
+11. 重构了`epoll reactor`及其相关的类，细化工作，方便读懂
+12. 将`epoll reactor`的工作模式改为了`ET`模式
+13. 修复了在输入参数时，若数据类型不匹配时，读取会异常的问题
+14. 修正了读取`uuid`时下标越界的情况
+15. 优化了技术文档的书写
+16. 修复了若重新设置ip和端口时，不会保存设置的情况
+

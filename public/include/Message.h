@@ -7,12 +7,6 @@
 #include "Security.h"
 #include "Setting.h"
 
-class MessageHeader;
-class MessageSender;
-class MessageReceiver;
-class MessageGenerator;
-class MessageAnalysis;
-
 // TODO 重构此页的代码， 使用 标准库 来重构
 
 
@@ -20,7 +14,7 @@ class MessageAnalysis;
  * 用于标识信息的头标记
  */
 
-struct MessageHeader {
+struct Message_Header {
 public:
     typedef char Level;
     static const char RECALL = '1';
@@ -45,32 +39,32 @@ public:
  *
  */
 
-class MessageGenerator {
+class Message_Generator {
 public:
-    MessageGenerator();
+    Message_Generator();
 
     void startInit();
     /*
      * 设置信息类型和参数
      */
-    void set_level_options(MessageHeader::Level, MessageHeader::Option, MessageHeader::Option);
+    void set_level_options(Message_Header::Level, Message_Header::Option, Message_Header::Option);
     /*
      * 设置参数
      */
-    void set_level(MessageHeader::Level);
+    void set_level(Message_Header::Level);
     /*
      * 获取当前的参数
      */
-    MessageHeader::Level get_level();
+    Message_Header::Level get_level();
     /*
      * 设置参数
      */
-    void set_option(MessageHeader::Option, MessageHeader::Option);
+    void set_option(Message_Header::Option, Message_Header::Option);
     /*
      * 获取参数1，2
      */
-    MessageHeader::Option get_para1() const;
-    MessageHeader::Option get_para2() const;
+    Message_Header::Option get_para1() const;
+    Message_Header::Option get_para2() const;
     /*
      * 设置目标用户
      * 设置目标用户的公钥路径
@@ -83,12 +77,12 @@ public:
     /*
      * 拷贝赋值函数
      */
-    const MessageGenerator& operator=(const MessageGenerator&);
+    const Message_Generator& operator=(const Message_Generator&);
     /*
      * 快速添加指定的内容
      */
     bool set_content(const std::string&, bool = true);
-    // MessageGenerator& operator=(const char *);
+    // Message_Generator& operator=(const char *);
     /*
      * 获取头标记
      */
@@ -115,10 +109,10 @@ private:
     int _max_len;
 
     // 类型
-    MessageHeader::Level _level;
+    Message_Header::Level _level;
     // 参数1, 2
-    MessageHeader::Option _para1;
-    MessageHeader::Option _para2;
+    Message_Header::Option _para1;
+    Message_Header::Option _para2;
     // 目标的用户
     std::string _target_user_uuid;
     // 发送的数据的内容
@@ -140,25 +134,25 @@ private:
  * 负责处理接受回来的数据，并执行相应的函数
  */
 // TODO 测试recall接受函数
-class MessageAnalysis {
+class Message_Analysis {
 public:
     /*
      * 构造初始化
      */
-    MessageAnalysis();
+    Message_Analysis();
     void startInit();
     explicit operator const char *();
-    // MessageAnalysis& operator=(const std::string&);
+    // Message_Analysis& operator=(const std::string&);
 
     /*
      * 获取当前的类型
      */
-    MessageHeader::Level get_level();
+    Message_Header::Level get_level();
     /*
      * 获取参数1和参数2
      */
-    MessageHeader::Option get_para1();
-    MessageHeader::Option get_para2();
+    Message_Header::Option get_para1();
+    Message_Header::Option get_para2();
     /*
      * 获取uuid
      */
@@ -177,7 +171,7 @@ public:
      * 读取命令,
      * 当可以触发一个函数的时候，返回false, 否则返回true以为while做循环
      */
-    int get_command(MessageReceiver *mr);
+    int get_command(Message_Receiver *mr);
     /*
      * 检查头消息是否正确
      */
@@ -186,11 +180,11 @@ public:
 private:
     RSA_decrypt dec;
     // 当前的消息类型
-    MessageHeader::Level _level;
+    Message_Header::Level _level;
     // 参数1
-    MessageHeader::Option _para1;
+    Message_Header::Option _para1;
     // 参数2
-    MessageHeader::Option _para2;
+    Message_Header::Option _para2;
     // 目标uuid
     std::string _uuid1;
     // 自己的uuid
@@ -213,16 +207,16 @@ private:
  * TODO 设计多线程安全
  */
 
-class MessageReceiver {
+class Message_Receiver {
 public:
-    MessageReceiver();
+    Message_Receiver();
     void startInit();
     /*
-     * 获取头文件
+     * 获取头标记
      */
     const std::shared_ptr<char[]>& get_header();
     /*
-     * 获取当前的内容
+     * 获取数据
      */
     std::shared_ptr<unsigned char[]> get_content();
     /*
@@ -260,7 +254,7 @@ private:
     // 申请的最大的消息的长度
     int _max_len;
     // 处理受到的消息
-    MessageAnalysis _analysis;
+    Message_Analysis _analysis;
     // 目标服务器
     int _socket_fd;
     // 内容的长度
@@ -275,8 +269,3 @@ private:
     std::shared_ptr<Language> lang;
 
 };
-
-/*
- * 负责处理即将发送的数据
- */
-
