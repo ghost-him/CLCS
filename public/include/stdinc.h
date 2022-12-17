@@ -38,7 +38,6 @@
 #include <uuid/uuid.h>
 
 #include <nlohmann/json.hpp>
-#include <mysql/mysql.h>
 
 #include <Message_Displayer.h>
 
