@@ -12,7 +12,7 @@ std::function<void()> Init::startInit = [](){
 )";
     OUT << (std::string)"version: " + VERSION;
 
-    signal(SIGPIPE, SIG_IGN);
+    //signal(SIGPIPE, SIG_IGN);
 
     auto file_manager = File_Manager::ptr;
     // 添加默认的文件路径

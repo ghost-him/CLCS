@@ -78,6 +78,8 @@ int Server_Message_Sender::send_message(const std::string& str) {
     std::cerr << std::endl;
 #endif
 
+
+#ifdef ET
     int remain_to_send = str.size();
     do{
         int ret = write(_socket_fd, str.c_str() + (str.size() - remain_to_send), remain_to_send);
@@ -98,6 +100,19 @@ int Server_Message_Sender::send_message(const std::string& str) {
         }
         remain_to_send -= ret;
     }while (remain_to_send > 0);
+#else
+    int ret = write(_socket_fd, str.c_str(), str.size());
+        switch (ret) {
+            case 0: {
+                return ret;
+            }
+            case -1: {
+                return ret;
+            }
+            default:
+                break;
+        }
+#endif
     return str.size();
 }
 
@@ -108,6 +123,7 @@ int Server_Message_Sender::send_message(std::shared_ptr<unsigned char[]> message
     std::cerr << std::endl;
 #endif
 
+#ifdef ET
     int remain_to_send = len;
     do{
         int ret = write(_socket_fd, message.get() + (len - remain_to_send), remain_to_send);
@@ -129,6 +145,21 @@ int Server_Message_Sender::send_message(std::shared_ptr<unsigned char[]> message
         }
         remain_to_send -= ret;
     }while (remain_to_send > 0);
+#else
+    int ret = write(_socket_fd, message.get(), len);
+        switch (ret) {
+            case 0: {
+                return ret;
+            }
+            case -1:{
+                // 读取异常
+                return ret;
+            }
+            default:
+                break;
+        }
+#endif
+
     return len;
 }
 

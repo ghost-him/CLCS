@@ -97,7 +97,11 @@ void Epoll_Reactor::startInit() {
     store_add_event(deamon);
     // 设置属性
     deamon->set_socket_fd(_server_socket_fd);
+#ifdef ET
     deamon->set_event_status(EPOLLIN | EPOLLET);
+#else
+    deamon->set_event_status(EPOLLIN);
+#endif
     deamon->set_function(Epoll_Reactor_Service::accept_connection);
     // 添加到监听树中
     epoll_add_event(deamon);
@@ -181,6 +185,7 @@ void Epoll_Reactor::start_listen() {
     for (int i = 0; i < number_fd; i++) {
         std::shared_ptr<Event> ptr = ((Event *)_run_events[i].data.ptr)->get_self();
 
+#ifdef ET
         if ((_run_events[i].events & (EPOLLIN | EPOLLET)) && (ptr->get_epoll_event()->events & (EPOLLIN | EPOLLET))) {
             //Thread_Pool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr.get());
             ptr->execute();
@@ -194,6 +199,18 @@ void Epoll_Reactor::start_listen() {
         } else {
             epoll_flush_event(ptr);
         }
+#else
+        if ((_run_events[i].events & (EPOLLIN)) && (ptr->get_epoll_event()->events & (EPOLLIN))) {
+            //Thread_Pool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr.get());
+            ptr->execute();
+        }
+
+        if ((_run_events[i].events & (EPOLLOUT)) && (ptr->get_epoll_event()->events & (EPOLLOUT))) {
+            //Thread_Pool::ptr()->commit(TaskLevel::DO_ONCE, &Event::execute, ptr.get());
+            ptr->execute();
+        }
+#endif
+
     }
 }
 

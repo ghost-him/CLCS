@@ -869,7 +869,7 @@ void log(const std::string& str);
 
 设计模式：单例模式
 
-使用`linux`的epoll函数为基础，封装出来的
+使用`linux`的epoll函数为基础，封装出来的，有两种模式，`ET`模式和`LT`模式，可以在`stdinc.h`中切换
 
 * 设置`ip`和端口
 * 初始化`epoll_reactor`
@@ -1017,3 +1017,4 @@ DO_KEEP: 一直运行（开辟新的线程来运行)
 ## bug
 
 1. 界面显示可能会出现错误
+1. 存在内存泄露的问题

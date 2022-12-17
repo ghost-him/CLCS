@@ -47,11 +47,12 @@
  */
 
 //#define DEBUG_MAIN            // 程序流程调试
-//#define DEBUG_EPOLL           // epoll reactor 调试
+#define DEBUG_EPOLL           // epoll reactor 调试
 //#define DEBUG_THREAD_POOL     // 线程池调试
-//#define DEBUG_OUTPUT          // 输出数据调试
+#define DEBUG_OUTPUT          // 输出数据调试
 //#define DEBUG_INPUT           // 输入数据调试
 //#define DEBUG_CLIENT_BUSINESS // 客户端事务调试
+
 
 
 /*
@@ -60,7 +61,10 @@
 #define OUT OUT::ptr()
 #define IN IN::ptr()
 // 版本
-#define VERSION "0.5.1"
+#define VERSION "0.5.2"
+
+// epoll 反应堆模式
+#define ET
 
 class Default_Option;
 class Event;
