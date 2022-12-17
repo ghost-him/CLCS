@@ -30,6 +30,7 @@
 #include <list>
 #include <memory>
 #include <typeinfo>
+#include <condition_variable>
 
 #include <openssl/err.h>
 #include <openssl/evp.h>

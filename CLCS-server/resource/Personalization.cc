@@ -56,7 +56,7 @@ std::function<void()> Init::startInit = [](){
     User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
-    Thread_Pool::startInit();
+    Thread_Pool::ptr()->startInit();
 
     // 初始化连接器
     Epoll_Reactor::ptr()->startInit();

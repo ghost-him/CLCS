@@ -154,7 +154,7 @@ std::function<void()> Init::startInit = [](){
     User_Manager::ptr()->Init_User_Manager();
 
     // 初始化线程池
-    Thread_Pool::startInit();
+    Thread_Pool::ptr()->startInit();
 
     // 初始化服务器连接器
     Server_Connector::ptr()->startInit();

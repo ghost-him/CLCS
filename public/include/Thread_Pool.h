@@ -4,32 +4,6 @@
 #include "Setting.h"
 #include "Language.h"
 
-class threadPool_t {
-public:
-    // 结构体的锁
-    pthread_mutex_t _struct_lock = PTHREAD_MUTEX_INITIALIZER;
-    // 用于管理线程的数量
-    pthread_mutex_t _thread_counter = PTHREAD_MUTEX_INITIALIZER;
-
-    pthread_cond_t _task_not_empty = PTHREAD_COND_INITIALIZER;
-
-    // 机器的默认的支持的并发数
-    unsigned int _max_number = 0;           // 最大的线程数量
-    unsigned int _min_number = 0;           // 最小的线程数量
-    unsigned int _grow_number = 0;          // 每一次增加的线程的数量
-    unsigned int _deleted_number = 0;       // 即将被删除的线程的数量
-
-    unsigned int _working_thread = 1;       // 正在工作的线程
-    unsigned int _total_thread = 0;         // 总线程数
-
-    pthread_t _daemon_thread = 0;           // 守护线程的id
-
-    int _check_per_time = 5;    // 每一次自检的间隔
-
-    bool _is_closed = true;        // 线程池是否关闭
-
-};
-
 class TaskLevel {
 public:
     enum Level {
@@ -46,78 +20,116 @@ public:
     TaskLevel::Level _level;
 };
 
-
-
 class Thread_Pool final {
 public:
     ~Thread_Pool();
 
     static std::shared_ptr<Thread_Pool> ptr();
 
-    static void startInit();
+    // 用于初始化线程池
+    void startInit();
 
-    static void startThreadPool();
+    // 运行线程池
+    void startThreadPool();
 
-    template<class Func, class ...Args> // 添加任务
-    static void commit(TaskLevel::Level level, Func&& function, Args&&... args) {
-#ifdef DEBUG_MAIN
-        std::cerr << "commited task:" << function << std::endl;
-#endif
-        auto task_func = std::bind(std::forward<Func>(function), std::forward<Args>(args)...);
+    // 关闭线程池
+    void close();
 
+    // 添加任务
+    template <class Func, class ...Arg>
+    void commit(TaskLevel::Level level, Func && function, Arg&& ... args ) {
+
+        // 创建的任务
+        auto func = std::bind(std::forward<Func>(function), std::forward<Arg>(args)...);
         Task task;
-        task._task = task_func;
-        task._level = level;
 
-        pthread_mutex_lock(&self._struct_lock);
-        _task_deque.push_back(task);
-        pthread_cond_signal(&self._task_not_empty);
-        pthread_mutex_unlock(&self._struct_lock);
+        task._level = level;
+        task._task = func;
+
+        total_mutex.lock();
+        task_deque.push_back(task);
+        total_mutex.unlock();
+        // 让一个线程来执行该函数
+        task_mutex.notify_one();
     }
 
-    static void set_max_thread(int num);       // 设置最大的线程数
-    static void set_min_thread(int num);       // 设置最小的线程数
-    static void set_grow_thread(int num);      // 设置变化的线程数
-    static void set_check_time(int num);       // 设置自检的时间
+    void set_max_thread(int x) {max_thread = x;}
 
-    static unsigned int get_max_thread();       // 获取当前最大的线程数
-    static unsigned int get_min_thread();       // 获取当前最小的线程数
-    static unsigned int get_grow_thread();      // 获取当前变化的线程数
-    static unsigned int get_check_time();       // 获取当前自检的时间
-    static unsigned int get_working_thread();   // 获取当前正在工作的线程的数量
+    void set_min_thread(int x) {min_thread = x;}
+
+    void set_grow_thread(int x) {grow_thread = x;}
+
+    void set_checking_time(int x) {checking_time = x;}
+
+    unsigned int get_max_thread() {return max_thread;}
+
+    unsigned int get_min_thread() {return min_thread;}
+
+    unsigned int get_grow_thread() {return grow_thread;}
+
+    unsigned int get_total_thread() {return total_thread;}
+
+    unsigned int get_living_thread() {return living_thread;}
+
+    unsigned int get_checking_time() {return checking_time;}
 
 private:
     static std::shared_ptr<Thread_Pool> _ptr;
 
-
-    static threadPool_t self;
-    Thread_Pool();
-
-
-    // 普通线程做的任务
-    static void* thread_work(void *);
-
-    /*
-     * 守护线程做的任务
-     * 用于管理其他的线程
-     * 检查是否需要增减线程
-     *
-     */
-    static void* daemon_thread(void *);
-
-    // 添加线程
-    static void add_thread();
-
-    // 减少线程
-    static void mis_thread();
-
-    static std::deque<Task> _task_deque;  // 任务队列,做一次的
-    static std::set<pthread_t> _thread_id;
-
     static std::shared_ptr<Log> log;
     static std::shared_ptr<Setting> setting;
     static std::shared_ptr<Language> lang;
+
+    Thread_Pool();
+    /*
+     * 线程池的属性
+     */
+    // 最大的线程数
+    std::atomic<unsigned int> max_thread;
+    // 最小的线程数
+    std::atomic<unsigned int> min_thread;
+    // 增长的线程数
+    std::atomic<unsigned int> grow_thread;
+
+    // 总线程数
+    std::atomic<unsigned int> total_thread;
+    // 工作的线程数
+    std::atomic<unsigned int> living_thread;
+    // 即将被销毁的线程数
+    unsigned int destroyed_thread;
+    // 检查的时间间隔
+    std::atomic<unsigned int> checking_time;
+
+    // 线程池的锁
+    std::mutex total_mutex;
+
+    // 任务锁
+    std::condition_variable task_mutex;
+
+    std::deque<Task> task_deque;
+
+    // 维护普通线程
+    std::map<std::thread::id, std::thread> thread;
+
+    // 维护守护线程
+    std::thread daemon;
+
+    // 是否被初始化了
+    bool is_inited = false;
+
+    // 是否被关闭了
+    bool is_closed = true;
+
+    // 普通线程执行的函数
+    void common_thread();
+    // 守护线程执行的函数
+    void daemon_thread();
+    // 添加线程
+    void add_thread();
+    // 减少线程
+    void mis_thread();
+
+
+
 };
-
-
 
