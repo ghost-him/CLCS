@@ -110,6 +110,7 @@ std::function<void()> Init::startInit = [](){
 | |___| |__| |___ ___) |_____| (__| | |  __/ | | | |_
  \____|_____\____|____/       \___|_|_|\___|_| |_|\__|
 )";
+    OUT << (std::string)"version: " + VERSION;
 
     auto file_manager = File_Manager::ptr();
     // 添加默认的文件路径

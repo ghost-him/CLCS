@@ -61,8 +61,8 @@ std::string User::get_pri_path() {
 }
 
 const User & User::operator=(const User& user) {
-    strncpy(_uuid, user._uuid, 37);
-    strncpy(_name, user._name, 33);
+    strncpy(_uuid, user._uuid, sizeof(_uuid));
+    strncpy(_name, user._name, sizeof(_name));
     fd = user.fd;
     _pub_path = user._pub_path;
     _pri_path = user._pri_path;

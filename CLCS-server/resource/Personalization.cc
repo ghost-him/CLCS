@@ -10,6 +10,7 @@ std::function<void()> Init::startInit = [](){
 | |___| |__| |___ ___) |_____\__ \  __/ |   \ V /  __/ |
  \____|_____\____|____/      |___/\___|_|    \_/ \___|_|
 )";
+    OUT << (std::string)"version: " + VERSION;
 
     signal(SIGPIPE, SIG_IGN);
 

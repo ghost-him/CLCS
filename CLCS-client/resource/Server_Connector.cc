@@ -62,6 +62,7 @@ bool Server_Connector::start_connect() {
 
     int ret = connect(_socket_fd, (struct sockaddr*)&_serv_addr, sizeof(_serv_addr));
     if (ret != 0) {
+        close(_socket_fd);
         log->log((*lang)["ServerConnector_connect_socket_failed"] + _ip + ":" + std::to_string(_port) + " , errno: %e\n");
         return false;
     }

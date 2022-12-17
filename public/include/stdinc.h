@@ -54,12 +54,13 @@
 //#define DEBUG_CLIENT_BUSINESS // 客户端事务调试
 
 
- /*
-  * 全局变量
-  */
+/*
+ * 全局变量
+ */
 #define OUT OUT::ptr()
 #define IN IN::ptr()
-
+// 版本
+#define VERSION "0.5.1"
 
 class Default_Option;
 class Event;
@@ -78,7 +79,6 @@ class RSA_Security;
 class RSA_encrypt;
 class RSA_decrypt;
 class Setting;
-class threadPool_t;
 class TaskLevel;
 class Task;
 class Thread_Pool;

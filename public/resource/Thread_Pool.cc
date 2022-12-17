@@ -118,9 +118,6 @@ void Thread_Pool::common_thread() {
             }
         }
 
-
-
-
         living_thread++;
 #ifdef DEBUG_THREAD_POOL
         std::cerr << "threadpool start a task" << std::endl;
