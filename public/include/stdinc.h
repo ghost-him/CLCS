@@ -47,9 +47,9 @@
  */
 
 //#define DEBUG_MAIN            // 程序流程调试
-#define DEBUG_EPOLL           // epoll reactor 调试
+//#define DEBUG_EPOLL           // epoll reactor 调试
 //#define DEBUG_THREAD_POOL     // 线程池调试
-#define DEBUG_OUTPUT          // 输出数据调试
+//#define DEBUG_OUTPUT          // 输出数据调试
 //#define DEBUG_INPUT           // 输入数据调试
 //#define DEBUG_CLIENT_BUSINESS // 客户端事务调试
 
