@@ -61,7 +61,7 @@
 #define OUT OUT::ptr()
 #define IN IN::ptr()
 // 版本
-#define VERSION "0.5.2"
+#define VERSION "0.5.3"
 
 // epoll 反应堆模式
 #define ET
