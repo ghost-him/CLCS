@@ -2,6 +2,10 @@
 
 一个linux下，基于命令行的聊天软件
 
+## 相关文档
+
+[技术文档](https://github.com/ghost-him/CLCS/blob/main/doc/CLCS%20%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3.md) | [更新日志](https://github.com/ghost-him/CLCS/blob/main/doc/CLCS%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97.md)
+
 ## CLCS项目介绍
 
 CLCS（Command Line Chat Software）是一个linux下的命令行软件， 采用了分布式的设计， 每一台电脑均可以当作一个服务器， 也可以当作一个客户端。
