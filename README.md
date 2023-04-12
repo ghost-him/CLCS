@@ -268,6 +268,10 @@ block --- 阻塞输入
 
 当消息出来的过于频繁以至于无法完整输入一个命令时可以运用此技巧。
 
+## 安全性
+
+[![Security Status](https://s.murphysec.com/badge/ghost-him/CLCS.svg)](https://www.murphysec.com/p/ghost-him/CLCS)
+
 ## 题外话
 
 不知道下一次是什么时候再次开发这个软件了，应该是会在我考完研以后吧。。。
